@@ -1,5 +1,7 @@
 'use client';
 
+import { getErrorMessage } from '@/lib/i18n';
+import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Sticker, StickerPack } from '@/types/sticker';
@@ -10,6 +12,7 @@ import { useCoin } from '@/context/CoinContext';
 import Link from 'next/link';
 
 export default function StickerMarketplacePage() {
+  const { translate } = useLanguage();
   const [tab, setTab] = useState<'stickers' | 'packs'>('stickers');
   const [stickers, setStickers] = useState<Sticker[]>([]);
   const [packs, setPacks] = useState<StickerPack[]>([]);
@@ -59,8 +62,8 @@ export default function StickerMarketplacePage() {
       await api.post(`/stickers/${sticker.id}/purchase`);
       await refreshBalance();
       await fetchAll();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Mua sticker thất bại');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Mua sticker thất bại'));
     } finally {
       setPurchasingId(null);
     }
@@ -78,8 +81,8 @@ export default function StickerMarketplacePage() {
       await api.post(`/sticker-packs/${pack.id}/purchase`);
       await refreshBalance();
       await fetchAll();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Mua pack thất bại');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Mua pack thất bại'));
     } finally {
       setPurchasingId(null);
     }
@@ -87,21 +90,21 @@ export default function StickerMarketplacePage() {
 
   function renderOwnershipBadgeOrButton(sticker: Sticker) {
     if (sticker.price_coins === 0) {
-      return <span className="text-xs font-semibold text-success">Miễn phí</span>;
+      return <span className="text-metadata font-semibold text-success">{translate("Miễn phí")}</span>;
     }
     if (user && sticker.creator_id === user.id) {
-      return <span className="text-xs font-semibold text-accent">Của bạn</span>;
+      return <span className="text-metadata font-semibold text-accent">{translate("Của bạn")}</span>;
     }
     if (ownedIds.has(sticker.id)) {
-      return <span className="text-xs font-semibold text-success">Đã sở hữu</span>;
+      return <span className="text-metadata font-semibold text-success">{translate("Đã sở hữu")}</span>;
     }
     return (
       <button
         onClick={() => handleBuySticker(sticker)}
         disabled={purchasingId === sticker.id}
-        className="rounded-control bg-primary px-3 py-1 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
+        className="ui-button ui-button-primary disabled:opacity-50"
       >
-        {purchasingId === sticker.id ? '...' : `🪙 ${sticker.price_coins}`}
+        {purchasingId === sticker.id ? '...' : translate('coinPrice', { count: sticker.price_coins })}
       </button>
     );
   }
@@ -110,95 +113,90 @@ export default function StickerMarketplacePage() {
     <div className="bg-background">
 
 
-      <main className="page-shell max-w-3xl">
+      <main className="page-shell">
         <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row">
           <div>
-            <h1 className="text-foreground text-page-title">Chợ Sticker</h1>
-            <p className="text-sm text-muted">Mua sticker độc quyền từ cộng đồng để trang trí bình chọn</p>
+            <h1 className="text-foreground text-page-title">{translate("Chợ Sticker")}</h1>
+            <p className="text-body-md text-muted">{translate("Mua sticker độc quyền từ cộng đồng để trang trí bình chọn")}</p>
           </div>
           {user && (
             <Link
               href="/stickers/create"
-              className="rounded-card bg-primary px-4 py-2 text-on-primary hover:bg-primary-hover text-label-lg min-h-11"
+              className="ui-button ui-button-primary"
             >
-              + Tạo sticker
-            </Link>
+              {translate("+ Tạo sticker")} </Link>
           )}
         </div>
 
-        <div className="mb-6 flex flex-wrap gap-1 border-b border-border">
+        <div role="group" aria-label={translate("Loại sticker")} className="mb-6 flex flex-wrap gap-2">
           <button
             onClick={() => setTab('stickers')}
-            className={`min-h-11 border-b-2 px-4 py-2 text-sm font-medium ${
-              tab === 'stickers' ? 'border-accent text-accent' : 'border-transparent text-muted'
-            }`}
+            aria-pressed={tab === 'stickers'}
+            className="ui-filter"
           >
-            Sticker lẻ
-          </button>
+            {translate("Sticker lẻ")} </button>
           <button
             onClick={() => setTab('packs')}
-            className={`min-h-11 border-b-2 px-4 py-2 text-sm font-medium ${
-              tab === 'packs' ? 'border-accent text-accent' : 'border-transparent text-muted'
-            }`}
+            aria-pressed={tab === 'packs'}
+            className="ui-filter"
           >
-            Pack
-          </button>
+            {translate("Pack")} </button>
         </div>
 
-        {error && <p className="mb-4 text-sm text-danger">{error}</p>}
+        {error && <p role="alert" className="ui-feedback bg-danger-soft mb-4 text-danger">{translate(error)}</p>}
 
         {loading ? (
-          <p className="text-center text-muted">Đang tải...</p>
+          <p className="text-center text-muted">{translate("Đang tải...")}</p>
         ) : tab === 'stickers' ? (
           stickers.length === 0 ? (
-            <p className="text-center text-muted">Chưa có sticker nào.</p>
+            <p className="text-center text-muted">{translate("Chưa có sticker nào.")}</p>
           ) : (
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-3">
               {stickers.map((sticker) => (
                 <div
                   key={sticker.id}
-                  className="flex min-w-0 flex-col items-center rounded-card bg-surface p-3 text-center ring-1 ring-border"
+                  className="ui-card flex min-w-0 flex-col items-center text-center"
                 >
                   <img src={sticker.image_url} alt={sticker.name} className="h-20 w-20 object-contain" />
-                  <p className="mt-2 line-clamp-1 text-xs font-semibold text-foreground">{sticker.name}</p>
-                  <p className="text-body-sm text-muted [overflow-wrap:anywhere]">bởi {sticker.creator.name}</p>
+                  <p className="mt-2 line-clamp-1 text-metadata font-semibold text-foreground">{sticker.name}</p>
+                  <p className="text-body-sm text-muted [overflow-wrap:anywhere]">{translate("bởi")} {sticker.creator.name}</p>
                   <div className="mt-2">{renderOwnershipBadgeOrButton(sticker)}</div>
                 </div>
               ))}
             </div>
           )
         ) : packs.length === 0 ? (
-          <p className="text-center text-muted">Chưa có pack nào.</p>
+          <p className="text-center text-muted">{translate("Chưa có pack nào.")}</p>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-3">
             {packs.map((pack) => (
-              <div key={pack.id} className="min-w-0 rounded-card bg-surface p-card ring-1 ring-border">
+              <div key={pack.id} className="ui-card min-w-0">
                 <div className="mb-2 flex flex-wrap gap-1">
                   {pack.stickers.slice(0, 4).map((s) => (
                     <img key={s.id} src={s.image_url} alt={s.name} className="h-12 w-12 rounded-card object-contain" />
                   ))}
                   {pack.stickers.length > 4 && (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-card bg-surface-muted text-xs font-semibold text-muted">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-card bg-surface-muted text-metadata font-semibold text-muted">
                       +{pack.stickers.length - 4}
                     </div>
                   )}
                 </div>
-                <p className="text-label-lg text-secondary [overflow-wrap:anywhere]">{pack.name}</p>
+                <p className="text-label-lg text-foreground [overflow-wrap:anywhere]">{pack.name}</p>
                 {pack.description && <p className="text-body-sm text-muted [overflow-wrap:anywhere]">{pack.description}</p>}
                 <p className="mt-1 text-body-sm text-muted [overflow-wrap:anywhere]">
-                  {pack.stickers.length} sticker · bởi {pack.creator.name}
+                  {translate('stickersBy', { count: pack.stickers.length, author: pack.creator.name })}
                 </p>
 
                 <div className="mt-3">
                   {user && pack.creator_id === user.id ? (
-                    <span className="text-xs font-semibold text-accent">Của bạn</span>
+                    <span className="text-metadata font-semibold text-accent">{translate("Của bạn")}</span>
                   ) : (
                     <button
                       onClick={() => handleBuyPack(pack)}
                       disabled={purchasingId === pack.id}
-                      className="w-full rounded-card bg-primary py-1.5 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
+                      className="ui-button ui-button-primary w-full disabled:opacity-50"
                     >
-                      {purchasingId === pack.id ? 'Đang xử lý...' : `Mua cả pack — 🪙 ${pack.price_coins}`}
+                      {purchasingId === pack.id ? translate("Đang xử lý...") : translate('packPrice', { count: pack.price_coins })}
                     </button>
                   )}
                 </div>

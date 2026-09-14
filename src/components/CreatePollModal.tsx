@@ -1,10 +1,15 @@
 'use client';
 
+import { getErrorMessage } from '@/lib/i18n';
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
+import Dialog from '@/components/Dialog';
+import AppIcon from '@/components/AppIcon';
 import { api } from '@/lib/api';
 import { usePollModal } from '@/context/PollModalContext';
 
 export default function CreatePollModal() {
+  const { translate } = useLanguage();
   const { isOpen, closeModal, triggerRefresh } = usePollModal();
   const [question, setQuestion] = useState('');
   const [type, setType] = useState<'single_choice' | 'multiple_choice'>('single_choice');
@@ -63,90 +68,93 @@ export default function CreatePollModal() {
       resetForm();
       closeModal();
       triggerRefresh();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Tạo bình chọn thất bại, thử lại nhé');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Tạo bình chọn thất bại, thử lại nhé'));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/40 px-4">
-      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-panel border border-border bg-surface p-card">
+    <Dialog onClose={closeModal} label={translate("Tạo bình chọn mới")}>
         <div className="mb-4 flex items-start justify-between gap-3">
-          <h2 className="text-foreground text-card-title">Tạo bình chọn mới</h2>
-          <button type="button" onClick={closeModal} aria-label="Đóng" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-muted hover:bg-surface-muted">
-            ✕
+          <h2 className="text-foreground text-card-title">{translate("Tạo bình chọn mới")}</h2>
+          <button type="button" onClick={closeModal} aria-label={translate("Đóng")} className="ui-button ui-button-ghost h-11 w-11 shrink-0 text-muted hover:bg-surface-muted p-0">
+            <AppIcon name="close" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">Câu hỏi</label>
+            <label htmlFor="poll-question" className="mb-1 block text-foreground text-label-lg">{translate("Câu hỏi")}</label>
             <input
+              id="poll-question"
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               required
-              placeholder="Hôm nay ăn gì?"
-              className="w-full rounded-card border border-border-strong px-4 py-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-control min-h-11"
+              placeholder={translate("Hôm nay ăn gì?")}
+              className="ui-input w-full"
             />
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">Kiểu chọn</label>
+              <label htmlFor="poll-type" className="mb-1 block text-foreground text-label-lg">{translate("Kiểu chọn")}</label>
               <select
+                id="poll-type"
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
-                className="w-full rounded-card border border-border-strong px-3 py-2 text-control focus:border-accent focus:outline-none min-h-11"
+                className="ui-input w-full"
               >
-                <option value="single_choice">Chỉ 1 lựa chọn</option>
-                <option value="multiple_choice">Nhiều lựa chọn</option>
+                <option value="single_choice">{translate("Chỉ 1 lựa chọn")}</option>
+                <option value="multiple_choice">{translate("Nhiều lựa chọn")}</option>
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">Ai xem được</label>
+              <label htmlFor="poll-visibility" className="mb-1 block text-foreground text-label-lg">{translate("Ai xem được")}</label>
               <select
+                id="poll-visibility"
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
-                className="w-full rounded-card border border-border-strong px-3 py-2 text-control focus:border-accent focus:outline-none min-h-11"
+                className="ui-input w-full"
               >
-                <option value="public">Công khai</option>
-                <option value="private">Chỉ mình tôi</option>
+                <option value="public">{translate("Công khai")}</option>
+                <option value="private">{translate("Chỉ mình tôi")}</option>
               </select>
             </div>
           </div>
 
-          <label className="flex min-h-11 items-center gap-2 text-sm text-foreground">
+          <label className="flex min-h-11 items-center gap-2 text-foreground text-label-lg">
             <input
               type="checkbox"
               checked={allowUserOptions}
               onChange={(e) => setAllowUserOptions(e.target.checked)}
               className="h-[18px] w-[18px] shrink-0 rounded border-border-strong text-accent focus:ring-accent"
             />
-            Cho phép người khác thêm lựa chọn riêng
-          </label>
+            {translate("Cho phép người khác thêm lựa chọn riêng")} </label>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">Các lựa chọn</label>
-            <div className="space-y-2">
+            <p id="poll-options-label" className="mb-1 text-label-lg text-foreground">{translate("Các lựa chọn")}</p>
+            <div role="group" aria-labelledby="poll-options-label" className="space-y-2">
               {options.map((option, index) => (
                 <div key={index} className="flex gap-2">
                   <input
                     type="text"
                     value={option}
+                    aria-label={translate('optionNumber', { count: index + 1 })}
                     onChange={(e) => updateOption(index, e.target.value)}
-                    placeholder={`Lựa chọn ${index + 1}`}
-                    className="flex-1 rounded-card border border-border-strong px-3 py-2 text-control focus:border-accent focus:outline-none min-h-11 min-w-0"
+                    placeholder={translate('optionNumber', { count: index + 1 })}
+                    className="ui-input flex-1 min-w-0"
                   />
                   {options.length > 2 && (
                     <button
                       type="button"
                       onClick={() => removeOption(index)}
-                      className="h-11 w-11 shrink-0 rounded-card px-2 text-muted hover:bg-surface-muted hover:text-danger"
+                      aria-label={translate('removeOption', { count: index + 1 })}
+                      className="ui-button ui-button-ghost h-11 w-11 shrink-0 text-muted hover:bg-surface-muted hover:text-danger p-0"
                     >
-                      ✕
+                      <AppIcon name="close" />
                     </button>
                   )}
                 </div>
@@ -155,23 +163,21 @@ export default function CreatePollModal() {
             <button
               type="button"
               onClick={addOption}
-              className="min-h-11 mt-2 text-sm font-medium text-accent hover:underline"
+              className="ui-button ui-button-ghost mt-2 text-accent hover:underline"
             >
-              + Thêm lựa chọn
-            </button>
+              {translate("+ Thêm lựa chọn")} </button>
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="ui-feedback bg-danger-soft text-danger">{translate(error)}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-card bg-primary py-2 text-on-primary transition hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
+            className="ui-button ui-button-primary w-full disabled:opacity-50"
           >
-            {loading ? 'Đang tạo...' : 'Tạo bình chọn'}
+            {loading ? translate("Đang tạo...") : translate("Tạo bình chọn")}
           </button>
         </form>
-      </div>
-    </div>
+    </Dialog>
   );
 }

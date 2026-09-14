@@ -1,11 +1,14 @@
 'use client';
 
+import { getErrorMessage } from '@/lib/i18n';
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 export default function LoginPage() {
+  const { translate, language } = useLanguage();
   const { login, loginWithGoogle } = useAuth();
   const { resolvedTheme } = useTheme();
   const [email, setEmail] = useState('');
@@ -20,8 +23,8 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Đăng nhập thất bại, thử lại nhé');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Đăng nhập thất bại, thử lại nhé'));
     } finally {
       setLoading(false);
     }
@@ -31,79 +34,79 @@ export default function LoginPage() {
     setError('');
     try {
       await loginWithGoogle(credentialResponse.credential);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Đăng nhập Google thất bại');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Đăng nhập Google thất bại'));
     }
   }
 
   return (
     <div className="flex min-h-[calc(100dvh-var(--app-header-height))] items-center justify-center bg-background px-margin-mobile py-section">
-      <div className="w-full max-w-md rounded-panel border border-border bg-surface p-card">
-        <h1 className="mb-2 text-center text-secondary text-page-title">Chào mừng trở lại</h1>
-        <p className="mb-6 text-center text-muted">Đăng nhập vào tài khoản</p>
+      <div className="ui-card w-full max-w-md">
+        <h1 className="mb-2 text-center text-foreground text-page-title">{translate("Chào mừng trở lại")}</h1>
+        <p className="mb-6 text-center text-muted">{translate("Đăng nhập vào tài khoản")}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">Email</label>
+            <label htmlFor="login-email" className="mb-1 block text-foreground text-label-lg">{translate("Email")}</label>
             <input
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-card border border-border-strong px-4 py-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-control min-h-11"
+              className="ui-input w-full"
               placeholder="ban@example.com"
             />
           </div>
 
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="block text-sm font-medium text-foreground">Mật khẩu</label>
-              <Link href="/forgot-password" className="text-xs text-accent hover:underline">
-                Quên mật khẩu?
-              </Link>
+              <label htmlFor="login-password" className="block text-foreground text-label-lg">{translate("Mật khẩu")}</label>
             </div>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-card border border-border-strong px-4 py-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-control min-h-11"
+              className="ui-input w-full"
               placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="ui-feedback bg-danger-soft text-danger">{translate(error)}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-card bg-primary py-2 text-on-primary transition hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
+            className="ui-button ui-button-primary w-full disabled:opacity-50"
           >
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            {loading ? translate("Đang đăng nhập...") : translate("Đăng nhập")}
           </button>
         </form>
 
         <div className="my-4 flex items-center gap-3">
           <div className="h-px flex-1 bg-surface-hover" />
-          <span className="text-xs text-muted">hoặc</span>
+          <span className="text-metadata text-muted">{translate("hoặc")}</span>
           <div className="h-px flex-1 bg-surface-hover" />
         </div>
 
         <div className="flex justify-center">
-          <GoogleLogin
-            width="240"
-            key={resolvedTheme}
-            theme={resolvedTheme === 'dark' ? 'filled_black' : 'outline'}
-            onSuccess={handleGoogleSuccess}
-            onError={() => setError('Đăng nhập Google thất bại')}
-          />
+          <GoogleOAuthProvider key={language} clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string} locale={language}>
+            <GoogleLogin
+              width="240"
+              key={resolvedTheme}
+              theme={resolvedTheme === 'dark' ? 'filled_black' : 'outline'}
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Đăng nhập Google thất bại')}
+            />
+          </GoogleOAuthProvider>
         </div>
 
-        <p className="mt-6 text-center text-sm text-muted">
-          Chưa có tài khoản?{' '}
+        <p className="mt-6 text-center text-body-md text-muted">
+          {translate("Chưa có tài khoản?")}{' '}
           <Link href="/register" className="font-medium text-accent hover:underline">
-            Đăng ký
-          </Link>
+            {translate("Đăng ký")} </Link>
         </p>
       </div>
     </div>

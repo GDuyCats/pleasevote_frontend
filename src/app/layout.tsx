@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import { CoinProvider } from '@/context/CoinContext';
 import { AuthPromptProvider } from '@/context/AuthPromptContext';
@@ -10,9 +9,11 @@ import AuthPromptModal from '@/components/AuthPromptModal';
 import AppShell from '@/components/AppShell';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { themeInitScript } from '@/lib/theme';
+import { LanguageProvider } from '@/context/LanguageContext';
+import { languageInitScript } from '@/lib/i18n';
 import './globals.css';
 
-const jakarta = Plus_Jakarta_Sans({ subsets: ['latin', 'vietnamese'], variable: '--font-plus-jakarta-sans', display: 'swap' });
+const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-inter', display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'PleaseVote',
@@ -27,13 +28,14 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={jakarta.variable} suppressHydrationWarning>
+    <html lang="vi" className={inter.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: languageInitScript }} />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider>
-          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string}>
+        <LanguageProvider>
+          <ThemeProvider>
             <AuthProvider>
               <CoinProvider>
                 <AuthPromptProvider>
@@ -46,8 +48,8 @@ export default function RootLayout({
                 </AuthPromptProvider>
               </CoinProvider>
             </AuthProvider>
-          </GoogleOAuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

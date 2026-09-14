@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useState, useRef } from 'react';
 
 const REACTION_EMOJIS: Record<string, string> = {
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export default function ReactionButton({ count, myReaction, onReact, onRemove, size = 'md' }: Props) {
+  const { translate, formatNumber } = useLanguage();
   const [showPicker, setShowPicker] = useState(false);
   // useRef persists across renders — unlike a plain variable, clearTimeout
   // here reliably cancels the exact timer we previously scheduled.
@@ -72,7 +74,7 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
   const activeColor = myReaction ? REACTION_COLORS[myReaction] : 'text-muted';
   const activeEmoji = myReaction ? REACTION_EMOJIS[myReaction] : null;
   const iconSize = size === 'sm' ? 'h-4 w-4' : 'h-5 w-5';
-  const textSize = size === 'sm' ? 'text-xs' : 'text-sm';
+  const textSize = size === 'sm' ? 'text-metadata' : 'text-body-md';
 
   return (
     <div className="relative inline-block" onMouseEnter={openPicker} onMouseLeave={scheduleClose}
@@ -81,13 +83,13 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
       onKeyDown={(event) => { if (event.key === 'Escape') { setShowPicker(false); event.stopPropagation(); } }}>
       <button
         type="button"
-        aria-label={myReaction ? 'Gỡ cảm xúc ' + (REACTION_LABELS[myReaction] || '') : 'Thích'}
+        aria-label={myReaction ? translate('removeReaction', { reaction: translate(REACTION_LABELS[myReaction] || 'Cảm xúc') }) : translate("Thích")}
         aria-pressed={Boolean(myReaction)}
         onClick={handleMainClick}
         className={`flex min-h-11 items-center gap-2 font-medium transition-colors duration-150 ${activeColor} ${textSize}`}
       >
         {activeEmoji ? (
-          <span className='text-lg'>{activeEmoji}</span>
+          <span className='text-section-title'>{activeEmoji}</span>
         ) : (
           <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path
@@ -97,8 +99,8 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
             />
           </svg>
         )}
-        {count > 0 && <span className="tabular-nums">{count}</span>}
-        {size === 'md' && <span>{myReaction ? REACTION_LABELS[myReaction] || 'Cảm xúc' : 'Thích'}</span>}
+        {count > 0 && <span className="tabular-nums">{formatNumber(count)}</span>}
+        {size === 'md' && <span>{myReaction ? translate(REACTION_LABELS[myReaction] || "Cảm xúc") : translate("Thích")}</span>}
       </button>
 
       {/* Invisible bridge so the cursor can travel from button to popup
@@ -108,7 +110,7 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
       <div
         inert={!showPicker}
         role="group"
-        aria-label="Chọn cảm xúc"
+        aria-label={translate("Chọn cảm xúc")}
         className={`fixed inset-x-4 bottom-[calc(var(--mobile-nav-height)+0.5rem)] z-40 mx-auto mb-2 flex w-fit max-w-[calc(100vw-2rem)] flex-wrap justify-center gap-1 rounded-panel bg-surface p-2 shadow-floating ring-1 ring-border transition-opacity duration-150 sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:z-20 sm:mx-0 sm:flex-nowrap sm:rounded-full ${
           showPicker ? 'scale-100 opacity-100' : 'pointer-events-none scale-90 opacity-0'
         }`}
@@ -117,10 +119,10 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
           <button
             key={type}
             type="button"
-            aria-label={REACTION_LABELS[type]}
+            aria-label={translate(REACTION_LABELS[type])}
             aria-pressed={myReaction === type}
             onClick={(e) => handleSelect(e, type)}
-            className={`min-h-11 min-w-11 rounded-full p-1 text-xl hover:bg-surface-muted ${
+            className={`min-h-11 min-w-11 rounded-full p-1 text-card-title hover:bg-surface-muted ${
               myReaction === type ? 'bg-accent-soft' : ''
             }`}
             title={REACTION_LABELS[type]}

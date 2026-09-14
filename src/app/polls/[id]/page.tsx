@@ -7,7 +7,7 @@ export default async function PollDetailPage({ params }: { params: Promise<{ id:
   return (
     <div className="bg-background">
 
-      <main className="page-shell max-w-2xl">
+      <main className="page-shell">
         <div className="overflow-hidden rounded-card bg-surface ring-1 ring-border">
           <PollDetailContent pollId={id} />
         </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { Comment } from '@/types/poll';
@@ -16,6 +17,7 @@ export default function OptionComments({
   pollId: number;
   pollAuthorId: number;
 }) {
+  const { translate } = useLanguage();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,23 +66,23 @@ export default function OptionComments({
         <input
           type="text"
           value={text}
+          aria-label={translate("Bình luận về lựa chọn")}
           onChange={(e) => setText(e.target.value)}
-          placeholder={user ? 'Bình luận về lựa chọn này...' : 'Đăng nhập để bình luận'}
-          className="flex-1 rounded-full border border-border bg-surface px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11 min-w-0"
+          placeholder={user ? translate("Bình luận về lựa chọn này...") : translate("Đăng nhập để bình luận")}
+          className="ui-input flex-1 min-w-0"
         />
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-control bg-primary px-3 py-1.5 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
+          className="ui-button ui-button-primary disabled:opacity-50"
         >
-          Gửi
-        </button>
+          {translate("Gửi")} </button>
       </form>
 
       {loading ? (
-        <p className="text-xs text-muted">Đang tải...</p>
+        <p className="text-metadata text-muted">{translate("Đang tải...")}</p>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-muted">Chưa có bình luận nào cho lựa chọn này.</p>
+        <p className="text-metadata text-muted">{translate("Chưa có bình luận nào cho lựa chọn này.")}</p>
       ) : (
         <div className="divide-y divide-border">
           {comments.map((c) => (

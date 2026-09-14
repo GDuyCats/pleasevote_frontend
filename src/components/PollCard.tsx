@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -13,6 +14,7 @@ import ReactionBar from '@/components/ReactionBar';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
 import PollOptionRow from '@/components/PollOptionRow';
 export default function PollCard({ poll: initialPoll }: { poll: Poll }) {
+  const { translate, language } = useLanguage();
   const [poll, setPoll] = useState(initialPoll);
   const [voting, setVoting] = useState<number | null>(null);
   const [voteError, setVoteError] = useState<string | null>(null);
@@ -109,29 +111,30 @@ export default function PollCard({ poll: initialPoll }: { poll: Poll }) {
           {poll.author.avatar_url ? (
             <Image src={poll.author.avatar_url} alt="" width={40} height={40} unoptimized className="h-10 w-10 shrink-0 rounded-full border border-border object-cover" />
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent">{poll.author.name.charAt(0).toUpperCase()}</div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-body-md font-semibold text-accent">{poll.author.name.charAt(0).toUpperCase()}</div>
           )}
           <div className="min-w-0 flex-1 basis-24">
-            <p className="truncate text-author text-secondary">{poll.author.name}</p>
+            <p className="truncate text-author text-foreground">{poll.author.name}</p>
             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-metadata text-muted">
-              <time dateTime={poll.created_at}>{formatRelativeTime(poll.created_at)}</time>
+              <time dateTime={poll.created_at}>{formatRelativeTime(poll.created_at, language)}</time>
               <span aria-hidden="true">·</span>
-              <span className="inline-flex items-center gap-1"><AppIcon name={poll.visibility === 'public' ? 'globe' : 'lock'} className="h-3 w-3" />{poll.visibility === 'public' ? 'Công khai' : poll.visibility === 'private' ? 'Riêng tư' : 'Nhóm'}</span>
+              <span className="inline-flex items-center gap-1"><AppIcon name={poll.visibility === 'public' ? 'globe' : 'lock'} className="h-3 w-3" />{poll.visibility === 'public' ? translate("Công khai") : poll.visibility === 'private' ? translate("Riêng tư") : translate("Nhóm")}</span>
             </div>
           </div>
-          <span className={['shrink-0 rounded-full px-2.5 py-1 text-label-sm font-medium', poll.isClosed ? 'bg-surface-muted text-muted' : 'bg-accent-soft text-accent'].join(' ')}>{poll.isClosed ? 'Đã đóng' : 'Đang mở'}</span>
+          <span className={['shrink-0 rounded-full px-2.5 py-1 text-label-sm font-medium', poll.isClosed ? 'bg-surface-muted text-muted' : 'bg-accent-soft text-accent'].join(' ')}>{poll.isClosed ? translate("Đã đóng") : translate("Đang mở")}</span>
         </div>
-        <h2 id={'poll-title-' + poll.id} className="text-secondary [overflow-wrap:anywhere] text-card-title">
+        <h2 id={'poll-title-' + poll.id} className="text-foreground [overflow-wrap:anywhere] text-card-title">
           <Link href={'/polls/' + poll.id} className="rounded-sm hover:text-accent">{poll.question}</Link>
         </h2>
-        {poll.background_image && <Link href={'/polls/' + poll.id} aria-label={'Xem bình chọn: ' + poll.question} className="mt-4 block overflow-hidden rounded-panel"><Image src={poll.background_image} alt="" width={1200} height={640} unoptimized className="aspect-[16/9] h-auto w-full object-cover" /></Link>}
-        <p className="mb-4 mt-2 text-xs text-muted">{poll.isClosed ? 'Bình chọn đã kết thúc. Bạn vẫn có thể tham gia thảo luận.' : poll.type === 'multiple_choice' ? 'Bạn có thể chọn nhiều phương án.' : 'Chọn một phương án để chia sẻ ý kiến của bạn.'}</p>
+        {poll.background_image && <Link href={'/polls/' + poll.id} aria-label={translate('viewPoll', { question: poll.question })} className="mt-4 block overflow-hidden rounded-media"><Image src={poll.background_image} alt="" width={1200} height={640} unoptimized className="aspect-[16/9] h-auto w-full object-cover" /></Link>}
+        <p className="mb-4 mt-2 text-metadata text-muted">{poll.isClosed ? translate("Bình chọn đã kết thúc. Bạn vẫn có thể tham gia thảo luận.") : poll.type === 'multiple_choice' ? translate("Bạn có thể chọn nhiều phương án.") : translate("Chọn một phương án để chia sẻ ý kiến của bạn.")}</p>
         <div className="space-y-4" aria-busy={voting !== null}>
           {poll.options.map((option) => (
             <PollOptionRow
               key={option.id}
               option={option}
               percent={totalVotes > 0 ? Math.round((option.voteCount / totalVotes) * 100) : 0}
+              pending={voting === option.id}
               disabled={poll.isClosed || voting !== null}
               pollAuthorId={poll.author.id}
               pollId={poll.id}
@@ -140,8 +143,8 @@ export default function PollCard({ poll: initialPoll }: { poll: Poll }) {
             />
           ))}
         </div>
-        {voteError && <p role="alert" className="mt-3 text-sm text-danger">{voteError}</p>}
-        <div className="mb-3 mt-5 flex items-center gap-1.5 text-xs text-muted"><AppIcon name="poll" className="h-3.5 w-3.5" /><span>{totalVotes.toLocaleString('vi-VN')} lượt bình chọn</span>{voting !== null && <span role="status" className="ml-auto">Đang gửi…</span>}</div>
+        {voteError && <p role="alert" className="ui-feedback bg-danger-soft mt-3 text-danger">{translate(voteError)}</p>}
+        <div className="mb-3 mt-5 flex items-center gap-1.5 text-metadata text-muted"><AppIcon name="poll" className="h-3.5 w-3.5" /><span>{translate('pollVotes', { count: totalVotes })}</span>{voting !== null && <span role="status" className="ml-auto">{translate("Đang gửi…")}</span>}</div>
         <ReactionBar reactions={poll.reactions} commentCount={poll.totalCommentCount ?? 0} myReaction={poll.myReaction} onReact={handleReact} onRemove={handleRemoveReact} onCommentClick={goToDetail} />
       </div>
     </article>

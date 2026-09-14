@@ -1,11 +1,14 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import AppIcon from '@/components/AppIcon';
 import { useCoin } from '@/context/CoinContext';
 
 
 export default function CoinsSuccessPage() {
+  const { translate, formatNumber } = useLanguage();
   const { balance, refreshBalance } = useCoin();
   const [checking, setChecking] = useState(true);
   const [attempts, setAttempts] = useState(0);
@@ -36,23 +39,22 @@ export default function CoinsSuccessPage() {
 
 
       <main className="page-shell max-w-md text-center">
-        <div className="rounded-card bg-surface p-8 ring-1 ring-border">
-          <div className="mb-4 text-5xl">🎉</div>
-          <h1 className="mb-2 text-foreground text-page-title">Thanh toán thành công!</h1>
-          <p className="mb-6 text-sm text-muted">
+        <div className="ui-card">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-media bg-success-soft text-success"><AppIcon name="check" className="h-6 w-6" /></span>
+          <h1 className="mb-2 text-foreground text-page-title">{translate("Thanh toán thành công!")}</h1>
+          <p className="mb-6 text-body-md text-muted">
             {checking
-              ? 'Đang cập nhật số coin của bạn...'
-              : 'Coin của bạn đã được cộng vào tài khoản.'}
+              ? translate("Đang cập nhật số coin của bạn...")
+              : translate("Coin của bạn đã được cộng vào tài khoản.")}
           </p>
 
-          <p className="mb-6 text-3xl font-bold text-warning">🪙 {balance ?? '...'}</p>
+          <p className="mb-6 flex flex-wrap items-center justify-center gap-2 text-metric tabular-nums text-accent"><AppIcon name="coin" className="h-6 w-6 shrink-0" />{balance === null ? '...' : formatNumber(balance)}</p>
 
           <Link
             href="/"
-            className="inline-block rounded-card bg-primary px-6 py-2 text-on-primary hover:bg-primary-hover text-label-lg min-h-11"
+            className="ui-button ui-button-primary"
           >
-            Về trang chủ
-          </Link>
+            {translate("Về trang chủ")} </Link>
         </div>
       </main>
     </div>

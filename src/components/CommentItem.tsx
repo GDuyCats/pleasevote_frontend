@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 import { Comment } from '@/types/poll';
 import { api } from '@/lib/api';
@@ -30,6 +31,7 @@ function CommentRow({
   onReacted: (id: number, type: string | null) => void;
   onReplyPosted: () => void;
 }) {
+  const { translate, language } = useLanguage();
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState('');
   const { user } = useAuth();
@@ -89,7 +91,7 @@ function CommentRow({
       {comment.user.avatar_url ? (
         <img src={comment.user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
       ) : (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-muted text-xs font-bold text-accent">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-muted text-metadata font-bold text-accent">
           {comment.user.name.charAt(0).toUpperCase()}
         </div>
       )}
@@ -97,21 +99,20 @@ function CommentRow({
       <div className="min-w-0 flex-1">
         <div className="rounded-card bg-surface-muted px-3 py-2">
           <div className="flex flex-wrap items-center gap-1.5">
-            <p className="text-author text-secondary [overflow-wrap:anywhere]">{comment.user.name}</p>
+            <p className="text-author text-foreground [overflow-wrap:anywhere]">{comment.user.name}</p>
             {isAuthor && (
               <span className="rounded-full bg-accent-muted px-1.5 py-0.5 text-label-sm font-semibold text-accent">
-                Tác giả
-              </span>
+                {translate("Tác giả")} </span>
             )}
           </div>
-          <p className="whitespace-pre-wrap text-body-lg text-foreground [overflow-wrap:anywhere]">
+          <p className="whitespace-pre-wrap text-body-lg text-body [overflow-wrap:anywhere]">
             {replyingToName && <span className="mr-1 font-medium text-accent">@{replyingToName}</span>}
             {comment.content}
           </p>
         </div>
 
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 pl-3 text-body-sm text-muted">
-          <span>{formatRelativeTime(comment.created_at)}</span>
+          <span>{formatRelativeTime(comment.created_at, language)}</span>
           <ReactionButton
             count={comment.totalReactions}
             myReaction={comment.myReaction}
@@ -119,9 +120,8 @@ function CommentRow({
             onRemove={handleRemoveReact}
             size="sm"
           />
-          <button onClick={() => setShowReplyBox((v) => !v)} className="min-h-11 font-medium hover:underline">
-            Phản hồi
-          </button>
+          <button onClick={() => setShowReplyBox((v) => !v)} className="ui-button ui-button-ghost hover:underline">
+            {translate("Phản hồi")} </button>
         </div>
 
         {showReplyBox && (
@@ -129,13 +129,13 @@ function CommentRow({
             <input
               type="text"
               value={replyText}
+              aria-label={translate("Nội dung phản hồi")}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Viết phản hồi..."
-              className="flex-1 rounded-full border border-border px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11 min-w-0"
+              placeholder={translate("Viết phản hồi...")}
+              className="ui-input flex-1 min-w-0"
             />
-            <button type="submit" className="min-h-11 text-sm font-medium text-accent">
-              Gửi
-            </button>
+            <button type="submit" className="ui-button ui-button-ghost text-accent">
+              {translate("Gửi")} </button>
           </form>
         )}
       </div>
@@ -144,6 +144,7 @@ function CommentRow({
 }
 
 export default function CommentItem({ comment: initial, pollAuthorId }: { comment: Comment; pollAuthorId: number }) {
+  const { translate } = useLanguage();
   const [comment, setComment] = useState(initial);
   const [flatItems, setFlatItems] = useState<FlatItem[]>([]);
   const [showReplies, setShowReplies] = useState(false);
@@ -243,9 +244,9 @@ export default function CommentItem({ comment: initial, pollAuthorId }: { commen
         <button
           onClick={handleToggleReplies}
           disabled={loading}
-          className="min-h-11 mt-2 pl-11 text-xs font-semibold text-muted hover:underline"
+          className="ui-button ui-button-ghost mt-2 pl-11 text-muted hover:underline"
         >
-          {loading ? 'Đang tải...' : showReplies ? 'Ẩn phản hồi' : `Xem ${comment.replyCount} phản hồi`}
+          {loading ? translate("Đang tải...") : showReplies ? translate("Ẩn phản hồi") : translate('replies', { count: comment.replyCount })}
         </button>
       )}
 
@@ -266,10 +267,9 @@ export default function CommentItem({ comment: initial, pollAuthorId }: { commen
               {item.comment.replyCount > 0 && !loadedParentIds.has(item.comment.id) && (
                 <button
                   onClick={() => loadChildrenOf(item.comment.id, item.comment.user.name, item.visualDepth)}
-                  className="min-h-11 mt-2 pl-11 text-xs font-semibold text-muted hover:underline"
+                  className="ui-button ui-button-ghost mt-2 pl-11 text-muted hover:underline"
                 >
-                  Xem {item.comment.replyCount} phản hồi
-                </button>
+                  {translate('replies', { count: item.comment.replyCount })} </button>
               )}
             </div>
           ))}

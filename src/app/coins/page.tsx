@@ -1,5 +1,8 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
+import AppIcon from '@/components/AppIcon';
+
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { CoinPackage } from '@/types/coin';
@@ -8,6 +11,7 @@ import { useAuthPrompt } from '@/context/AuthPromptContext';
 
 
 export default function CoinsPage() {
+  const { translate, locale, formatNumber } = useLanguage();
   const [packages, setPackages] = useState<CoinPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasingId, setPurchasingId] = useState<number | null>(null);
@@ -45,7 +49,7 @@ export default function CoinsPage() {
   }
 
   function formatPrice(cents: number, currency: string) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: currency.toUpperCase() }).format(
       cents / 100
     );
   }
@@ -54,23 +58,23 @@ export default function CoinsPage() {
     <div className="bg-background">
 
 
-      <main className="page-shell max-w-2xl">
-        <h1 className="mb-1 text-foreground text-page-title">Nạp Coin</h1>
-        <p className="mb-6 text-sm text-muted">Dùng coin để mua sticker độc quyền từ cộng đồng.</p>
+      <main className="page-shell">
+        <h1 className="mb-1 text-foreground text-page-title">{translate("Nạp Coin")}</h1>
+        <p className="mb-6 text-body-md text-muted">{translate("Dùng coin để mua sticker độc quyền từ cộng đồng.")}</p>
 
         {loading ? (
-          <p className="text-center text-muted">Đang tải...</p>
+          <p className="text-center text-muted">{translate("Đang tải...")}</p>
         ) : packages.length === 0 ? (
-          <p className="text-center text-muted">Chưa có gói coin nào.</p>
+          <p className="text-center text-muted">{translate("Chưa có gói coin nào.")}</p>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-4">
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="flex min-w-0 flex-col items-center rounded-card bg-surface p-card text-center ring-1 ring-border"
+                className="ui-card flex min-w-0 flex-col items-center text-center"
               >
-                <span className="text-3xl">🪙</span>
-                <p className="mt-2 max-w-full text-metric tabular-nums [overflow-wrap:anywhere] text-foreground">{pkg.coin_amount}</p>
+                <span className="flex h-12 w-12 items-center justify-center rounded-media bg-accent-soft text-accent"><AppIcon name="coin" className="h-6 w-6" /></span>
+                <p className="mt-2 max-w-full text-metric tabular-nums [overflow-wrap:anywhere] text-foreground">{formatNumber(pkg.coin_amount)}</p>
                 <p className="max-w-full text-body-sm text-muted [overflow-wrap:anywhere]">{pkg.name}</p>
                 <p className="mt-2 max-w-full text-section-title [overflow-wrap:anywhere] text-accent">
                   {formatPrice(pkg.price_cents, pkg.currency)}
@@ -78,9 +82,9 @@ export default function CoinsPage() {
                 <button
                   onClick={() => handleBuy(pkg.id)}
                   disabled={purchasingId === pkg.id}
-                  className="mt-4 w-full rounded-card bg-primary py-2 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
+                  className="ui-button ui-button-primary mt-4 w-full disabled:opacity-50"
                 >
-                  {purchasingId === pkg.id ? 'Đang chuyển...' : 'Mua ngay'}
+                  {purchasingId === pkg.id ? translate("Đang chuyển...") : translate("Mua ngay")}
                 </button>
               </div>
             ))}
