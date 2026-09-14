@@ -2,7 +2,7 @@
 
 import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
-import { api } from '@/lib/api';
+import { pollService } from '@/services/poll.service';
 import { PollOption } from '@/types/poll';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
@@ -53,7 +53,7 @@ export default function PollOptionRow({
     }
     applyOptimisticReaction(type);
     try {
-      await api.post(`/polls/options/${option.id}/react`, { type });
+      await pollService.reactToOption(option.id, type);
     } catch {
       // leave optimistic state
     }
@@ -63,7 +63,7 @@ export default function PollOptionRow({
     if (!user) return;
     applyOptimisticReaction(null);
     try {
-      await api.delete(`/polls/options/${option.id}/react`);
+      await pollService.removeOptionReaction(option.id);
     } catch {
       // no-op
     }

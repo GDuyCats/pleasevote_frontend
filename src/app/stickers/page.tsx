@@ -3,7 +3,7 @@
 import { getErrorMessage } from '@/lib/i18n';
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { stickerService } from '@/services/sticker.service';
 import { Sticker, StickerPack } from '@/types/sticker';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
@@ -32,16 +32,16 @@ export default function StickerMarketplacePage() {
   async function fetchAll() {
     setLoading(true);
     try {
-      const [stickersRes, packsRes] = await Promise.all([
-        api.get('/stickers'),
-        api.get('/sticker-packs'),
+      const [stickerList, packList] = await Promise.all([
+        stickerService.list(),
+        stickerService.listPacks(),
       ]);
-      setStickers(stickersRes.data);
-      setPacks(packsRes.data);
+      setStickers(stickerList);
+      setPacks(packList);
 
       if (user) {
-        const mineRes = await api.get('/stickers/mine');
-        setOwnedIds(new Set(mineRes.data.map((s: Sticker) => s.id)));
+        const ownedStickers = await stickerService.listMine();
+        setOwnedIds(new Set(ownedStickers.map((s: Sticker) => s.id)));
       } else {
         setOwnedIds(new Set());
       }
@@ -59,7 +59,7 @@ export default function StickerMarketplacePage() {
     setError('');
     setPurchasingId(sticker.id);
     try {
-      await api.post(`/stickers/${sticker.id}/purchase`);
+      await stickerService.purchase(sticker.id);
       await refreshBalance();
       await fetchAll();
     } catch (err: unknown) {
@@ -78,7 +78,7 @@ export default function StickerMarketplacePage() {
     setError('');
     setPurchasingId(pack.id);
     try {
-      await api.post(`/sticker-packs/${pack.id}/purchase`);
+      await stickerService.purchasePack(pack.id);
       await refreshBalance();
       await fetchAll();
     } catch (err: unknown) {

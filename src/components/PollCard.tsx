@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { Poll, PollOption } from '@/types/poll';
 import AppIcon from '@/components/AppIcon';
 import { formatRelativeTime } from '@/lib/formatTime';
-import { api } from '@/lib/api';
+import { pollService } from '@/services/poll.service';
 import { useAuth } from '@/context/AuthContext';
 import ReactionBar from '@/components/ReactionBar';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
@@ -32,8 +32,8 @@ export default function PollCard({ poll: initialPoll }: { poll: Poll }) {
     setVoting(optionId);
     setVoteError(null);
     try {
-      await api.post(`/polls/${poll.id}/vote`, { poll_option_id: optionId });
-      const { data } = await api.get(`/polls/${poll.id}`);
+      await pollService.vote(poll.id, optionId);
+      const data = await pollService.getById(poll.id);
       setPoll(data);
     } catch (err) {
       console.error('Vote failed', err);
@@ -77,9 +77,9 @@ export default function PollCard({ poll: initialPoll }: { poll: Poll }) {
     applyOptimisticReaction(type);
 
     try {
-      await api.post(`/polls/${poll.id}/react`, { type });
+      await pollService.react(poll.id, type);
     } catch {
-      const { data } = await api.get(`/polls/${poll.id}`);
+      const data = await pollService.getById(poll.id);
       setPoll(data);
     }
   }
@@ -93,9 +93,9 @@ export default function PollCard({ poll: initialPoll }: { poll: Poll }) {
     applyOptimisticReaction(null);
 
     try {
-      await api.delete(`/polls/${poll.id}/react`);
+      await pollService.removeReaction(poll.id);
     } catch {
-      const { data } = await api.get(`/polls/${poll.id}`);
+      const data = await pollService.getById(poll.id);
       setPoll(data);
     }
   }

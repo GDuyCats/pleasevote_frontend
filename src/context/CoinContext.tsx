@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { api } from '@/lib/api';
+import { coinService } from '@/services/coin.service';
 import { useAuth } from '@/context/AuthContext';
 
 interface CoinContextType {
@@ -21,7 +21,7 @@ export function CoinProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      const { data } = await api.get('/coins/balance');
+      const data = await coinService.getBalance();
       setBalance(data.coin_balance);
     } catch {
       // silently ignore — balance just won't show

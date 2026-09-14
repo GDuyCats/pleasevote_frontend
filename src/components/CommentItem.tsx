@@ -3,7 +3,7 @@
 import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 import { Comment } from '@/types/poll';
-import { api } from '@/lib/api';
+import { commentService } from '@/services/comment.service';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import ReactionButton from '@/components/ReactionButton';
@@ -48,7 +48,7 @@ function CommentRow({
     }
     onReacted(comment.id, type);
     try {
-      await api.post(`/comments/${comment.id}/react`, { type });
+      await commentService.react(comment.id, type);
     } catch {
       // leave optimistic state
     }
@@ -58,7 +58,7 @@ function CommentRow({
     if (!user) return;
     onReacted(comment.id, null);
     try {
-      await api.delete(`/comments/${comment.id}/react`);
+      await commentService.removeReaction(comment.id);
     } catch {
       // no-op
     }
@@ -76,7 +76,7 @@ function CommentRow({
     const pollId = pollIdMatch ? pollIdMatch[1] : null;
     if (!pollId) return;
 
-    await api.post(`/comments/polls/${pollId}`, {
+    await commentService.create(pollId, {
       content: replyText,
       parent_id: comment.id,
     });
@@ -193,7 +193,7 @@ export default function CommentItem({ comment: initial, pollAuthorId }: { commen
     if (loadedParentIds.has(parentId)) return;
     setLoadedParentIds((prev) => new Set(prev).add(parentId));
 
-    const { data } = await api.get(`/comments/${parentId}/replies`);
+    const data = await commentService.listReplies(parentId);
     const childVisualDepth = Math.min(parentVisualDepth + 1, MAX_VISUAL_DEPTH);
     const newItems: FlatItem[] = data.data.map((r: Comment) => ({
       comment: r,

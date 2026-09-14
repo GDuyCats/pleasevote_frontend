@@ -1,21 +1,12 @@
 'use client';
 
+import type { AdminUser } from '@/types/admin';
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { adminService } from '@/services/admin.service';
 
 import AdminGuard from '@/components/AdminGuard';
 import AdminNav from '@/components/AdminNav';
-
-interface AdminUser {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  is_locked: boolean;
-  avatar_url: string | null;
-  created_at: string;
-}
 
 export default function AdminUsersPage() {
   const { translate } = useLanguage();
@@ -30,7 +21,7 @@ export default function AdminUsersPage() {
   async function fetchUsers() {
     setLoading(true);
     try {
-      const { data } = await api.get('/users');
+      const data = await adminService.listUsers();
       setUsers(data);
     } finally {
       setLoading(false);
@@ -40,7 +31,7 @@ export default function AdminUsersPage() {
   async function handleToggleLock(u: AdminUser) {
     setActioningId(u.id);
     try {
-      await api.patch(`/users/${u.id}/${u.is_locked ? 'unlock' : 'lock'}`);
+      await (u.is_locked ? adminService.unlockUser(u.id) : adminService.lockUser(u.id));
       await fetchUsers();
     } finally {
       setActioningId(null);
@@ -50,7 +41,7 @@ export default function AdminUsersPage() {
   async function handleChangeRole(u: AdminUser, newRole: string) {
     setActioningId(u.id);
     try {
-      await api.patch(`/users/${u.id}/role`, { role: newRole });
+      await adminService.changeUserRole(u.id, newRole);
       await fetchUsers();
     } finally {
       setActioningId(null);
@@ -60,7 +51,6 @@ export default function AdminUsersPage() {
   return (
     <AdminGuard>
       <div className="bg-background">
-
 
         <main className="page-shell">
           <h1 className="mb-1 text-foreground text-page-title">{translate("Quản lý người dùng")}</h1>

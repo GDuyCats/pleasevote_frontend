@@ -1,16 +1,10 @@
 'use client';
 
+import type { User } from '@/types/user';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
+import { authService } from '@/services/auth.service';
 
 interface AuthContextType {
   user: User | null;
@@ -38,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    const { data } = await api.post('/auth/login', { email, password });
+    const data = await authService.login({ email, password });
 
     Cookies.set('accessToken', data.accessToken, { expires: 1 / 96 });
     Cookies.set('refreshToken', data.refreshToken, { expires: 30 });
@@ -49,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function loginWithGoogle(idToken: string) {
-    const { data } = await api.post('/auth/google', { idToken });
+    const data = await authService.loginWithGoogle(idToken);
 
     Cookies.set('accessToken', data.accessToken, { expires: 1 / 96 });
     Cookies.set('refreshToken', data.refreshToken, { expires: 30 });
@@ -60,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(name: string, email: string, password: string) {
-    const { data } = await api.post('/auth/register', { name, email, password });
+    const data = await authService.register({ name, email, password });
     return { message: data.message };
   }
 
@@ -68,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const refreshToken = Cookies.get('refreshToken');
     if (refreshToken) {
       try {
-        await api.post('/auth/logout', { refreshToken });
+        await authService.logout(refreshToken);
       } catch {
         // Even if the server call fails, still clear local state
       }

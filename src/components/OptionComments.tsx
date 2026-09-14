@@ -2,7 +2,7 @@
 
 import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
-import { api } from '@/lib/api';
+import { commentService } from '@/services/comment.service';
 import { Comment } from '@/types/poll';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -30,7 +30,7 @@ export default function OptionComments({
   async function fetchComments() {
     setLoading(true);
     try {
-      const { data } = await api.get(`/comments/options/${optionId}`);
+      const data = await commentService.listForOption(optionId);
       setComments(data.data);
       setLoaded(true);
     } finally {
@@ -48,7 +48,7 @@ export default function OptionComments({
 
     setSubmitting(true);
     try {
-      await api.post(`/comments/polls/${pollId}`, { content: text, poll_option_id: optionId });
+      await commentService.create(pollId, { content: text, poll_option_id: optionId });
       setText('');
       await fetchComments();
     } finally {

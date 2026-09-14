@@ -1,23 +1,12 @@
 'use client';
 
+import type { FullProfile } from '@/types/user';
 import { getErrorMessage } from '@/lib/i18n';
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { userService } from '@/services/user.service';
 import { useAuth } from '@/context/AuthContext';
-
-
-interface FullProfile {
-    id: number;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-    role: string;
-    coin_balance: number;
-    email_verified: boolean;
-    created_at: string;
-}
 
 export default function ProfilePage() {
   const { translate, formatDate, formatNumber } = useLanguage();
@@ -45,7 +34,7 @@ export default function ProfilePage() {
     async function fetchProfile() {
         setLoading(true);
         try {
-            const { data } = await api.get('/users/me');
+            const data = await userService.getProfile();
             setProfile(data);
             setName(data.name);
         } finally {
@@ -59,7 +48,7 @@ export default function ProfilePage() {
         setMessage('');
         setSaving(true);
         try {
-            const { data } = await api.patch('/users/me', { name });
+            const data = await userService.updateProfile({ name });
             setProfile(data);
             updateUser({ name: data.name });
             setMessage('Đã cập nhật tên thành công');
@@ -77,12 +66,8 @@ export default function ProfilePage() {
         setUploadingAvatar(true);
         setError('');
         try {
-            const formData = new FormData();
-            formData.append('avatar', file);
 
-            const { data } = await api.post('/users/me/avatar', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            const data = await userService.uploadAvatar(file);
 
             setProfile((prev) => (prev ? { ...prev, avatar_url: data.avatar_url } : prev));
         } catch (err: unknown) {
@@ -109,7 +94,6 @@ export default function ProfilePage() {
 
     return (
         <div className="bg-background">
-
 
             <main className="page-shell">
                 <div className="ui-card">

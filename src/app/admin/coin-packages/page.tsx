@@ -1,21 +1,13 @@
 'use client';
 
+import type { CoinPackage as AdminCoinPackage } from '@/types/coin';
 import { getErrorMessage } from '@/lib/i18n';
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { coinPackageService } from '@/services/coin-package.service';
 
 import AdminGuard from '@/components/AdminGuard';
 import AdminNav from '@/components/AdminNav';
-
-interface AdminCoinPackage {
-  id: number;
-  name: string;
-  coin_amount: number;
-  price_cents: number;
-  currency: string;
-  is_active: boolean;
-}
 
 export default function AdminCoinPackagesPage() {
   const { translate, locale, formatNumber } = useLanguage();
@@ -44,7 +36,7 @@ export default function AdminCoinPackagesPage() {
   async function fetchPackages() {
     setLoading(true);
     try {
-      const { data } = await api.get('/coin-packages/all');
+      const data = await coinPackageService.listAll();
       setPackages(data);
     } finally {
       setLoading(false);
@@ -62,7 +54,7 @@ export default function AdminCoinPackagesPage() {
 
     setCreating(true);
     try {
-      await api.post('/coin-packages', {
+      await coinPackageService.create({
         name,
         coin_amount: Number(coinAmount),
         price_cents: Number(priceCents),
@@ -81,9 +73,9 @@ export default function AdminCoinPackagesPage() {
 
   async function handleToggleActive(pkg: AdminCoinPackage) {
     if (pkg.is_active) {
-      await api.delete(`/coin-packages/${pkg.id}`);
+      await coinPackageService.deactivate(pkg.id);
     } else {
-      await api.put(`/coin-packages/${pkg.id}`, { is_active: true });
+      await coinPackageService.update(pkg.id, { is_active: true });
     }
     await fetchPackages();
   }
@@ -112,7 +104,7 @@ export default function AdminCoinPackagesPage() {
 
     setSaving(true);
     try {
-      await api.put(`/coin-packages/${pkgId}`, {
+      await coinPackageService.update(pkgId, {
         name: editName,
         coin_amount: Number(editCoinAmount),
         price_cents: Number(editPriceCents),
@@ -138,7 +130,6 @@ export default function AdminCoinPackagesPage() {
   return (
     <AdminGuard>
       <div className="bg-background">
-
 
         <main className="page-shell">
           <h1 className="mb-1 text-foreground text-page-title">{translate("Quản lý gói Coin")}</h1>

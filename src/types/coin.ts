@@ -15,3 +15,13 @@ export interface CoinTransaction {
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   created_at: string;
 }
+export type CreateCoinPackageInput = Pick<CoinPackage, 'name' | 'coin_amount' | 'price_cents' | 'currency'>;
+export type UpdateCoinPackageInput = Partial<CreateCoinPackageInput & Pick<CoinPackage, 'is_active'>>;
+
+export interface CoinBalance {
+  coin_balance: number;
+}
+
+export interface CheckoutSession {
+  checkoutUrl: string;
+}

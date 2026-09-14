@@ -4,7 +4,8 @@ import { useLanguage } from '@/context/LanguageContext';
 import AppIcon from '@/components/AppIcon';
 
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { coinPackageService } from '@/services/coin-package.service';
+import { coinService } from '@/services/coin.service';
 import { CoinPackage } from '@/types/coin';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
@@ -25,7 +26,7 @@ export default function CoinsPage() {
   async function fetchPackages() {
     setLoading(true);
     try {
-      const { data } = await api.get('/coin-packages');
+      const data = await coinPackageService.list();
       setPackages(data);
     } finally {
       setLoading(false);
@@ -40,7 +41,7 @@ export default function CoinsPage() {
 
     setPurchasingId(packageId);
     try {
-      const { data } = await api.post('/coins/checkout', { coin_package_id: packageId });
+      const data = await coinService.checkout(packageId);
       window.location.href = data.checkoutUrl;
     } catch (err) {
       console.error('Checkout failed', err);

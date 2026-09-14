@@ -1,20 +1,12 @@
 'use client';
 
+import type { AdminStats as Stats } from '@/types/admin';
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { adminService } from '@/services/admin.service';
 
 import AdminGuard from '@/components/AdminGuard';
 import AdminNav from '@/components/AdminNav';
-
-interface Stats {
-  users: { total: number; admins: number; staff: number; verified: number; locked: number; newToday: number; newThisWeek: number };
-  polls: { total: number; public: number; private: number; closed: number };
-  engagement: { totalVotes: number; totalComments: number; totalReactions: number };
-  moderation: { pendingReports: number; pendingAppeals: number };
-  revenue: { byCurrency: { currency: string; totalCents: number; transactionCount: number }[]; coinsInCirculation: number };
-  marketplace: { totalStickers: number; totalStickerPurchases: number };
-}
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   const { formatNumber } = useLanguage();
@@ -39,7 +31,7 @@ export default function AdminDashboardPage() {
   async function fetchStats() {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/stats');
+      const data = await adminService.getStats();
       setStats(data);
     } finally {
       setLoading(false);
@@ -55,7 +47,6 @@ export default function AdminDashboardPage() {
   return (
     <AdminGuard>
       <div className="bg-background">
-
 
         <main className="page-shell">
           <h1 className="mb-1 text-foreground text-page-title">{translate("Bảng điều khiển")}</h1>

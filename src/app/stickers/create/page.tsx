@@ -4,7 +4,7 @@ import { getErrorMessage } from '@/lib/i18n';
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { stickerService } from '@/services/sticker.service';
 import { SlotStatus } from '@/types/sticker';
 import { useAuth } from '@/context/AuthContext';
 import { useCoin } from '@/context/CoinContext';
@@ -40,7 +40,7 @@ export default function CreateStickerPage() {
   async function fetchSlotStatus() {
     setLoadingStatus(true);
     try {
-      const { data } = await api.get('/stickers/slots/status');
+      const data = await stickerService.getSlotStatus();
       setSlotStatus(data);
     } finally {
       setLoadingStatus(false);
@@ -51,7 +51,7 @@ export default function CreateStickerPage() {
     setError('');
     setBuyingSlots(true);
     try {
-      await api.post('/stickers/slots/purchase');
+      await stickerService.purchaseSlots();
       await fetchSlotStatus();
       await refreshBalance();
     } catch (err: unknown) {
@@ -84,14 +84,8 @@ export default function CreateStickerPage() {
 
     setSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('price_coins', priceCoins || '0');
-      formData.append('image', imageFile);
 
-      await api.post('/stickers', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await stickerService.create({ name, price_coins: priceCoins || '0', image: imageFile });
 
       setSuccess('Tạo sticker thành công!');
       setName('');

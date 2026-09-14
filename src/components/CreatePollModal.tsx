@@ -5,7 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 import Dialog from '@/components/Dialog';
 import AppIcon from '@/components/AppIcon';
-import { api } from '@/lib/api';
+import { pollService } from '@/services/poll.service';
 import { usePollModal } from '@/context/PollModalContext';
 
 export default function CreatePollModal() {
@@ -54,16 +54,8 @@ export default function CreatePollModal() {
 
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('question', question);
-      formData.append('type', type);
-      formData.append('visibility', visibility);
-      formData.append('allow_user_options', String(allowUserOptions));
-      formData.append('options', JSON.stringify(cleanOptions.map((label) => ({ label }))));
 
-      await api.post('/polls', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await pollService.create({ question, type, visibility, allow_user_options: allowUserOptions, options: cleanOptions.map((label) => ({ label })) });
 
       resetForm();
       closeModal();

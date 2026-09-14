@@ -3,7 +3,8 @@
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { pollService } from '@/services/poll.service';
+import { commentService } from '@/services/comment.service';
 import { PollDetail, Comment } from '@/types/poll';
 import { useAuth } from '@/context/AuthContext';
 import ReactionBar from '@/components/ReactionBar';
@@ -34,7 +35,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
 
     async function fetchPoll() {
         try {
-            const { data } = await api.get(`/polls/${pollId}`);
+            const data = await pollService.getById(pollId);
             setPoll(data);
         } catch (err) {
             setNotFound(true);
@@ -42,9 +43,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
     }
 
     async function fetchComments(cursor?: number) {
-        const { data } = await api.get(`/comments/polls/${pollId}`, {
-            params: cursor ? { cursor, limit: 10 } : { limit: 10 },
-        });
+        const data = await commentService.listForPoll(pollId, cursor ? { cursor, limit: 10 } : { limit: 10 });
         setComments((prev) => (cursor ? [...prev, ...data.data] : data.data));
         setCommentCursor(data.nextCursor);
     }
@@ -62,7 +61,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
         setVoting(optionId);
         setVoteError('');
         try {
-            await api.post(`/polls/${pollId}/vote`, { poll_option_id: optionId });
+            await pollService.vote(pollId, optionId);
             await fetchPoll();
         } catch {
             setVoteError('Chưa thể gửi bình chọn. Bạn thử lại nhé.');
@@ -91,7 +90,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
 
         setAddingOption(true);
         try {
-            await api.post(`/polls/${pollId}/options`, { label: newOptionLabel });
+            await pollService.addOption(pollId, newOptionLabel);
             setNewOptionLabel('');
             setShowAddOption(false);
             await fetchPoll();
@@ -135,7 +134,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
         applyOptimisticReaction(type);
 
         try {
-            await api.post(`/polls/${pollId}/react`, { type });
+            await pollService.react(pollId, type);
         } catch {
             await fetchPoll();
         }
@@ -150,7 +149,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
         applyOptimisticReaction(null);
 
         try {
-            await api.delete(`/polls/${pollId}/react`);
+            await pollService.removeReaction(pollId);
         } catch {
             await fetchPoll();
         }
@@ -167,7 +166,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
 
         setSubmittingComment(true);
         try {
-            await api.post(`/comments/polls/${pollId}`, { content: commentText });
+            await commentService.create(pollId, { content: commentText });
             setCommentText('');
             await fetchComments();
             await fetchPoll();

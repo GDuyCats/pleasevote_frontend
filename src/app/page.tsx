@@ -3,7 +3,7 @@
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { pollService } from '@/services/poll.service';
 import type { Poll } from '@/types/poll';
 
 import PollCard from '@/components/PollCard';
@@ -51,8 +51,8 @@ function Feed() {
 
   useEffect(() => {
     let cancelled = false;
-    api.get('/polls', { params: { limit: 10 } })
-      .then(({ data }) => {
+    pollService.list({ limit: 10 })
+      .then((data) => {
         if (cancelled) return;
         setPolls(data.data);
         setNextCursor(data.nextCursor);
@@ -73,7 +73,7 @@ function Feed() {
     setLoadingMore(true);
     setLoadMoreError(false);
     try {
-      const { data } = await api.get('/polls', { params: { limit: 10, cursor: nextCursor } });
+      const data = await pollService.list({ limit: 10, cursor: nextCursor });
       setPolls((previous) => [...previous, ...data.data]);
       setNextCursor(data.nextCursor);
     } catch {
