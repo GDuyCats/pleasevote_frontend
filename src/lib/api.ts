@@ -3,6 +3,9 @@ import Cookies from 'js-cookie';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true',
+  },
 });
 
 // Automatically attach the access token to every outgoing request, if present

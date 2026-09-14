@@ -30,7 +30,7 @@ export default function RegisterPage() {
 
   if (successMessage) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-purple-100 to-pink-100 px-4">
         <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
           <div className="mb-4 text-5xl">📬</div>
           <h1 className="mb-2 text-xl font-bold text-gray-800">Kiểm tra email của bạn!</h1>
@@ -47,7 +47,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-purple-100 to-pink-100 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
         <h1 className="mb-1 text-center text-2xl font-bold text-gray-800">🗳️ PleaseVote</h1>
         <p className="mb-6 text-center text-gray-500">Tạo tài khoản mới</p>
