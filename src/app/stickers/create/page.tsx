@@ -106,72 +106,72 @@ export default function CreateStickerPage() {
   }
 
   if (authLoading || loadingStatus || !slotStatus) {
-    return <p className="mt-10 text-center text-gray-400">Đang tải...</p>;
+    return <p className="mt-10 text-center text-muted">Đang tải...</p>;
   }
 
   const slotsFull = slotStatus.used >= slotStatus.limit;
   const canAffordSlots = (balance ?? 0) >= slotStatus.slotPackPriceCoins;
 
   return (
-    <main className="mx-auto max-w-lg px-4 py-8">
-      <h1 className="mb-1 text-xl font-bold text-gray-900">Tạo Sticker</h1>
-      <p className="mb-6 text-sm text-gray-500">Tạo sticker của riêng bạn và bán cho cộng đồng.</p>
+    <main className="page-shell max-w-lg">
+      <h1 className="mb-1 text-foreground text-page-title">Tạo Sticker</h1>
+      <p className="mb-6 text-sm text-muted">Tạo sticker của riêng bạn và bán cho cộng đồng.</p>
 
       {/* Slot usage */}
-      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-        <div className="flex items-center justify-between">
+      <div className="mb-6 rounded-card bg-surface p-4 ring-1 ring-border">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-gray-800">
+            <p className="text-sm font-semibold text-foreground">
               Slot sticker: {slotStatus.used} / {slotStatus.limit}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted">
               Mỗi lần mở khoá thêm {slotStatus.slotPackSize} slot với 🪙 {slotStatus.slotPackPriceCoins}
             </p>
           </div>
           <button
             onClick={handleBuySlots}
             disabled={buyingSlots || !canAffordSlots}
-            className="rounded-lg bg-yellow-100 px-3 py-2 text-xs font-semibold text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
+            className="min-h-11 rounded-card bg-warning-soft px-3 py-2 text-xs font-semibold text-warning hover:bg-warning-muted disabled:opacity-50"
           >
             {buyingSlots ? 'Đang mua...' : `+${slotStatus.slotPackSize} slot`}
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-muted">
           <div
-            className="h-full bg-purple-500 transition-all"
+            className="h-full bg-primary transition-all"
             style={{ width: `${Math.min(100, (slotStatus.used / slotStatus.limit) * 100)}%` }}
           />
         </div>
 
         {!canAffordSlots && slotsFull && (
-          <p className="mt-2 text-xs text-red-500">
+          <p className="mt-2 text-xs text-danger">
             Bạn không đủ coin để mở khoá thêm slot. Số dư hiện tại: 🪙 {balance ?? 0}
           </p>
         )}
       </div>
 
       {slotsFull ? (
-        <div className="rounded-2xl bg-orange-50 p-6 text-center">
-          <p className="text-sm font-semibold text-orange-700">Bạn đã dùng hết slot sticker.</p>
-          <p className="mt-1 text-xs text-orange-600">Mua thêm slot ở trên để tiếp tục tạo sticker mới.</p>
+        <div className="rounded-card bg-warning-soft p-6 text-center">
+          <p className="text-sm font-semibold text-warning">Bạn đã dùng hết slot sticker.</p>
+          <p className="mt-1 text-xs text-warning">Mua thêm slot ở trên để tiếp tục tạo sticker mới.</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-card bg-surface p-card ring-1 ring-border">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Tên sticker</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Tên sticker</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Mèo cười"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+              className="w-full rounded-card border border-border-strong px-4 py-2 text-control focus:border-accent focus:outline-none min-h-11"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Giá (coin) — để 0 nếu muốn miễn phí
             </label>
             <input
@@ -179,30 +179,30 @@ export default function CreateStickerPage() {
               min={0}
               value={priceCoins}
               onChange={(e) => setPriceCoins(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+              className="w-full rounded-card border border-border-strong px-4 py-2 text-control focus:border-accent focus:outline-none min-h-11"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Ảnh sticker</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Ảnh sticker</label>
             <input
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-purple-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-purple-600 hover:file:bg-purple-100"
+              className="w-full text-control text-muted file:mr-3 file:rounded-card file:border-0 file:bg-accent-soft file:px-3 file:py-2 file:text-sm file:font-semibold file:text-accent hover:file:bg-accent-muted min-h-11"
             />
             {imagePreview && (
-              <img src={imagePreview} alt="preview" className="mt-3 h-24 w-24 rounded-lg object-contain" />
+              <img src={imagePreview} alt="preview" className="mt-3 h-24 w-24 rounded-card object-contain" />
             )}
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {success && <p className="text-sm text-green-600">{success}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
+          {success && <p className="text-sm text-success">{success}</p>}
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-purple-600 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+            className="w-full rounded-card bg-primary py-2 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
           >
             {submitting ? 'Đang tạo...' : 'Tạo sticker'}
           </button>

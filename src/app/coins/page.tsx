@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { CoinPackage } from '@/types/coin';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
-import Navbar from '@/components/Navbar';
+
 
 export default function CoinsPage() {
   const [packages, setPackages] = useState<CoinPackage[]>([]);
@@ -51,34 +51,34 @@ export default function CoinsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="bg-background">
 
-      <main className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="mb-1 text-xl font-bold text-gray-900">Nạp Coin</h1>
-        <p className="mb-6 text-sm text-gray-500">Dùng coin để mua sticker độc quyền từ cộng đồng.</p>
+
+      <main className="page-shell max-w-2xl">
+        <h1 className="mb-1 text-foreground text-page-title">Nạp Coin</h1>
+        <p className="mb-6 text-sm text-muted">Dùng coin để mua sticker độc quyền từ cộng đồng.</p>
 
         {loading ? (
-          <p className="text-center text-gray-400">Đang tải...</p>
+          <p className="text-center text-muted">Đang tải...</p>
         ) : packages.length === 0 ? (
-          <p className="text-center text-gray-400">Chưa có gói coin nào.</p>
+          <p className="text-center text-muted">Chưa có gói coin nào.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-4">
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="flex flex-col items-center rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-gray-100"
+                className="flex min-w-0 flex-col items-center rounded-card bg-surface p-card text-center ring-1 ring-border"
               >
                 <span className="text-3xl">🪙</span>
-                <p className="mt-2 text-lg font-bold text-gray-900">{pkg.coin_amount}</p>
-                <p className="text-xs text-gray-400">{pkg.name}</p>
-                <p className="mt-2 text-sm font-semibold text-purple-600">
+                <p className="mt-2 max-w-full text-metric tabular-nums [overflow-wrap:anywhere] text-foreground">{pkg.coin_amount}</p>
+                <p className="max-w-full text-body-sm text-muted [overflow-wrap:anywhere]">{pkg.name}</p>
+                <p className="mt-2 max-w-full text-section-title [overflow-wrap:anywhere] text-accent">
                   {formatPrice(pkg.price_cents, pkg.currency)}
                 </p>
                 <button
                   onClick={() => handleBuy(pkg.id)}
                   disabled={purchasingId === pkg.id}
-                  className="mt-4 w-full rounded-lg bg-purple-600 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                  className="mt-4 w-full rounded-card bg-primary py-2 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
                 >
                   {purchasingId === pkg.id ? 'Đang chuyển...' : 'Mua ngay'}
                 </button>

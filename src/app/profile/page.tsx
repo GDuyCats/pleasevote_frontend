@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import Navbar from '@/components/Navbar';
+
 
 interface FullProfile {
     id: number;
@@ -91,9 +91,9 @@ export default function ProfilePage() {
 
     if (authLoading || loading || !profile) {
         return (
-            <div className="min-h-screen bg-gray-50">
-                <Navbar />
-                <p className="mt-10 text-center text-gray-400">Đang tải...</p>
+            <div className="bg-background">
+
+                <p className="mt-10 text-center text-muted">Đang tải...</p>
             </div>
         );
     }
@@ -105,12 +105,12 @@ export default function ProfilePage() {
     });
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Navbar />
+        <div className="bg-background">
 
-            <main className="mx-auto max-w-lg px-4 py-8">
-                <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                    <h1 className="mb-6 text-xl font-bold text-gray-900">Hồ sơ của bạn</h1>
+
+            <main className="page-shell max-w-lg">
+                <div className="rounded-card bg-surface p-4 ring-1 ring-border sm:p-6">
+                    <h1 className="mb-6 text-foreground text-page-title">Hồ sơ của bạn</h1>
 
                     {/* Avatar */}
                     <div className="mb-6 flex flex-col items-center">
@@ -118,11 +118,11 @@ export default function ProfilePage() {
                             {profile.avatar_url ? (
                                 <img src={profile.avatar_url} alt="" className="h-24 w-24 rounded-full object-cover" />
                             ) : (
-                                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-purple-100 text-3xl font-bold text-purple-600">
+                                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-accent-muted text-3xl font-bold text-accent">
                                     {profile.name.charAt(0).toUpperCase()}
                                 </div>
                             )}
-                            <label className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-purple-600 text-white shadow hover:bg-purple-700">
+                            <label className="absolute bottom-0 right-0 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-primary text-on-primary ring-1 ring-border hover:bg-primary-hover">
                                 {uploadingAvatar ? (
                                     <span className="text-xs">...</span>
                                 ) : (
@@ -140,7 +140,7 @@ export default function ProfilePage() {
                                     accept="image/*"
                                     onChange={handleAvatarChange}
                                     disabled={uploadingAvatar}
-                                    className="hidden"
+                                    className="hidden text-control min-h-11"
                                 />
                             </label>
                         </div>
@@ -149,47 +149,47 @@ export default function ProfilePage() {
                     {/* Editable name */}
                     <form onSubmit={handleSaveName} className="mb-6 space-y-3">
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Tên hiển thị</label>
+                            <label className="mb-1 block text-sm font-medium text-foreground">Tên hiển thị</label>
                             <input
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                className="w-full rounded-card border border-border-strong px-4 py-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-control min-h-11"
                             />
                         </div>
 
-                        {error && <p className="text-sm text-red-600">{error}</p>}
-                        {message && <p className="text-sm text-green-600">{message}</p>}
+                        {error && <p className="text-sm text-danger">{error}</p>}
+                        {message && <p className="text-sm text-success">{message}</p>}
 
                         <button
                             type="submit"
                             disabled={saving || name === profile.name}
-                            className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                            className="rounded-card bg-primary px-4 py-2 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
                         >
                             {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
                         </button>
                     </form>
 
                     {/* Read-only account info */}
-                    <div className="space-y-3 border-t border-gray-100 pt-4 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Email</span>
-                            <span className="font-medium text-gray-800">{profile.email}</span>
+                    <div className="space-y-3 border-t border-border pt-4 text-sm">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">Email</span>
+                            <span className="min-w-0 font-medium text-foreground [overflow-wrap:anywhere] sm:text-right">{profile.email}</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Trạng thái email</span>
-                            <span className={`font-medium ${profile.email_verified ? 'text-green-600' : 'text-orange-500'}`}>
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">Trạng thái email</span>
+                            <span className={`font-medium ${profile.email_verified ? 'text-success' : 'text-warning'}`}>
                                 {profile.email_verified ? 'Đã xác thực' : 'Chưa xác thực'}
                             </span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Số coin</span>
-                            <span className="font-medium text-gray-800">🪙 {profile.coin_balance}</span>
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">Số coin</span>
+                            <span className="font-medium text-foreground">🪙 {profile.coin_balance}</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Ngày tham gia</span>
-                            <span className="font-medium text-gray-800">{joinedDate}</span>
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">Ngày tham gia</span>
+                            <span className="font-medium text-foreground">{joinedDate}</span>
                         </div>
                     </div>
                 </div>

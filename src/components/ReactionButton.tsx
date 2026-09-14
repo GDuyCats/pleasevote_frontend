@@ -12,12 +12,16 @@ const REACTION_EMOJIS: Record<string, string> = {
 };
 
 const REACTION_COLORS: Record<string, string> = {
-  like: 'text-blue-600',
-  love: 'text-red-500',
-  haha: 'text-yellow-500',
-  wow: 'text-yellow-500',
-  sad: 'text-yellow-500',
-  angry: 'text-orange-600',
+  like: 'text-accent',
+  love: 'text-danger',
+  haha: 'text-warning',
+  wow: 'text-warning',
+  sad: 'text-warning',
+  angry: 'text-warning',
+};
+
+const REACTION_LABELS: Record<string, string> = {
+  like: 'Thích', love: 'Yêu thích', haha: 'Haha', wow: 'Wow', sad: 'Buồn', angry: 'Phẫn nộ',
 };
 
 interface Props {
@@ -65,16 +69,22 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
     }
   }
 
-  const activeColor = myReaction ? REACTION_COLORS[myReaction] : 'text-gray-500';
+  const activeColor = myReaction ? REACTION_COLORS[myReaction] : 'text-muted';
   const activeEmoji = myReaction ? REACTION_EMOJIS[myReaction] : null;
   const iconSize = size === 'sm' ? 'h-4 w-4' : 'h-5 w-5';
   const textSize = size === 'sm' ? 'text-xs' : 'text-sm';
 
   return (
-    <div className="relative inline-block" onMouseEnter={openPicker} onMouseLeave={scheduleClose}>
+    <div className="relative inline-block" onMouseEnter={openPicker} onMouseLeave={scheduleClose}
+      onFocus={openPicker}
+      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) scheduleClose(); }}
+      onKeyDown={(event) => { if (event.key === 'Escape') { setShowPicker(false); event.stopPropagation(); } }}>
       <button
+        type="button"
+        aria-label={myReaction ? 'Gỡ cảm xúc ' + (REACTION_LABELS[myReaction] || '') : 'Thích'}
+        aria-pressed={Boolean(myReaction)}
         onClick={handleMainClick}
-        className={`flex items-center gap-1 font-medium transition-colors duration-150 ${activeColor} ${textSize}`}
+        className={`flex min-h-11 items-center gap-2 font-medium transition-colors duration-150 ${activeColor} ${textSize}`}
       >
         {activeEmoji ? (
           <span className='text-lg'>{activeEmoji}</span>
@@ -88,6 +98,7 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
           </svg>
         )}
         {count > 0 && <span className="tabular-nums">{count}</span>}
+        {size === 'md' && <span>{myReaction ? REACTION_LABELS[myReaction] || 'Cảm xúc' : 'Thích'}</span>}
       </button>
 
       {/* Invisible bridge so the cursor can travel from button to popup
@@ -95,18 +106,24 @@ export default function ReactionButton({ count, myReaction, onReact, onRemove, s
       <div className="absolute bottom-full left-0 h-3 w-full" />
 
       <div
-        className={`absolute bottom-full left-0 z-20 mb-2 flex origin-bottom-left gap-1 rounded-full bg-white p-2 shadow-lg ring-1 ring-gray-200 transition-all duration-150 ${
+        inert={!showPicker}
+        role="group"
+        aria-label="Chọn cảm xúc"
+        className={`fixed inset-x-4 bottom-[calc(var(--mobile-nav-height)+0.5rem)] z-40 mx-auto mb-2 flex w-fit max-w-[calc(100vw-2rem)] flex-wrap justify-center gap-1 rounded-panel bg-surface p-2 shadow-floating ring-1 ring-border transition-opacity duration-150 sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:z-20 sm:mx-0 sm:flex-nowrap sm:rounded-full ${
           showPicker ? 'scale-100 opacity-100' : 'pointer-events-none scale-90 opacity-0'
         }`}
       >
         {Object.entries(REACTION_EMOJIS).map(([type, emoji]) => (
           <button
             key={type}
+            type="button"
+            aria-label={REACTION_LABELS[type]}
+            aria-pressed={myReaction === type}
             onClick={(e) => handleSelect(e, type)}
-            className={`text-xl transition-transform duration-150 hover:-translate-y-1 hover:scale-125 ${
-              myReaction === type ? 'scale-125' : ''
+            className={`min-h-11 min-w-11 rounded-full p-1 text-xl hover:bg-surface-muted ${
+              myReaction === type ? 'bg-accent-soft' : ''
             }`}
-            title={type}
+            title={REACTION_LABELS[type]}
           >
             {emoji}
           </button>

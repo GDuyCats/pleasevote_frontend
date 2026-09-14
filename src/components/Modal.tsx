@@ -20,19 +20,23 @@ export default function Modal({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/60 px-4"
       onClick={onClose}
     >
       <div
-        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl"
+        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-panel bg-surface border border-border"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-500 shadow hover:bg-gray-100"
-        >
-          ✕
-        </button>
+        <div className="sticky top-0 z-10 flex justify-end border-b border-border bg-surface px-3 py-2">
+          <button
+            type="button"
+            aria-label="Đóng bình chọn"
+            onClick={onClose}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-muted ring-1 ring-border hover:bg-surface-muted"
+          >
+            ✕
+          </button>
+        </div>
         {children}
       </div>
     </div>

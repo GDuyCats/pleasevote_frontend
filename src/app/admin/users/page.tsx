@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import Navbar from '@/components/Navbar';
+
 import AdminGuard from '@/components/AdminGuard';
 import AdminNav from '@/components/AdminNav';
 
@@ -57,22 +57,22 @@ export default function AdminUsersPage() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <div className="bg-background">
 
-        <main className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="mb-1 text-xl font-bold text-gray-900">Quản lý người dùng</h1>
-          <p className="mb-4 text-sm text-gray-500">Khoá tài khoản hoặc thay đổi quyền hạn</p>
+
+        <main className="page-shell max-w-4xl">
+          <h1 className="mb-1 text-foreground text-page-title">Quản lý người dùng</h1>
+          <p className="mb-4 text-sm text-muted">Khoá tài khoản hoặc thay đổi quyền hạn</p>
 
           <AdminNav />
 
           {loading ? (
-            <p className="text-center text-gray-400">Đang tải...</p>
+            <p className="text-center text-muted">Đang tải...</p>
           ) : (
-            <div className="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
-              <table className="w-full text-sm">
+            <div role="region" aria-label="Danh sách người dùng, cuộn ngang để xem đầy đủ" tabIndex={0} className="max-w-full overflow-x-auto rounded-card bg-surface ring-1 ring-border">
+              <table className="w-full min-w-[640px] text-body-md">
                 <thead>
-                  <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+                  <tr className="border-b border-border text-left text-xs text-muted">
                     <th className="px-4 py-3">Người dùng</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Quyền</th>
@@ -82,26 +82,26 @@ export default function AdminUsersPage() {
                 </thead>
                 <tbody>
                   {users.map((u) => (
-                    <tr key={u.id} className="border-b border-gray-50 last:border-0">
+                    <tr key={u.id} className="border-b border-border last:border-0">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {u.avatar_url ? (
                             <img src={u.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
                           ) : (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-600">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-muted text-xs font-bold text-accent">
                               {u.name.charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <span className="font-medium text-gray-800">{u.name}</span>
+                          <span className="font-medium text-foreground">{u.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{u.email}</td>
+                      <td className="px-4 py-3 text-muted">{u.email}</td>
                       <td className="px-4 py-3">
                         <select
                           value={u.role}
                           onChange={(e) => handleChangeRole(u, e.target.value)}
                           disabled={actioningId === u.id}
-                          className="rounded-lg border border-gray-200 px-2 py-1 text-xs focus:border-purple-500 focus:outline-none"
+                          className="rounded-card border border-border px-2 py-1 text-control focus:border-accent focus:outline-none min-h-11"
                         >
                           <option value="user">User</option>
                           <option value="staff">Staff</option>
@@ -111,7 +111,7 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-3">
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                            u.is_locked ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+                            u.is_locked ? 'bg-danger-soft text-danger' : 'bg-success-soft text-success'
                           }`}
                         >
                           {u.is_locked ? 'Đã khoá' : 'Hoạt động'}
@@ -121,7 +121,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => handleToggleLock(u)}
                           disabled={actioningId === u.id || u.role === 'admin'}
-                          className="rounded-lg bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-40"
+                          className="min-h-11 rounded-card bg-surface-muted px-3 py-1 text-xs font-medium text-foreground hover:bg-surface-hover disabled:opacity-40"
                         >
                           {u.is_locked ? 'Mở khoá' : 'Khoá'}
                         </button>

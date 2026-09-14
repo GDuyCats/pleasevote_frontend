@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import Navbar from '@/components/Navbar';
+
 import AdminGuard from '@/components/AdminGuard';
 import AdminNav from '@/components/AdminNav';
 
@@ -134,56 +134,56 @@ export default function AdminCoinPackagesPage() {
   const hiddenCount = packages.filter((p) => !p.is_active).length;
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <div className="bg-background">
 
-        <main className="mx-auto max-w-2xl px-4 py-8">
-          <h1 className="mb-1 text-xl font-bold text-gray-900">Quản lý gói Coin</h1>
-          <p className="mb-4 text-sm text-gray-500">Chỉ Admin mới truy cập được trang này.</p>
+
+        <main className="page-shell max-w-2xl">
+          <h1 className="mb-1 text-foreground text-page-title">Quản lý gói Coin</h1>
+          <p className="mb-4 text-sm text-muted">Chỉ Admin mới truy cập được trang này.</p>
 
           <AdminNav />
 
           {/* Create form */}
-          <form onSubmit={handleCreate} className="mb-8 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-            <h2 className="mb-3 text-sm font-semibold text-gray-700">Tạo gói mới</h2>
+          <form onSubmit={handleCreate} className="mb-8 rounded-card bg-surface p-card ring-1 ring-border">
+            <h2 className="mb-3 text-foreground text-section-title">Tạo gói mới</h2>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <label className="mb-1 block text-xs font-medium text-gray-600">Tên gói</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs font-medium text-muted">Tên gói</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Gói nhỏ"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-card border border-border-strong px-3 py-2 text-control focus:border-accent focus:outline-none min-h-11"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">Số coin</label>
+                <label className="mb-1 block text-xs font-medium text-muted">Số coin</label>
                 <input
                   type="number"
                   value={coinAmount}
                   onChange={(e) => setCoinAmount(e.target.value)}
                   placeholder="100"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-card border border-border-strong px-3 py-2 text-control focus:border-accent focus:outline-none min-h-11"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">Giá (cent)</label>
+                <label className="mb-1 block text-xs font-medium text-muted">Giá (cent)</label>
                 <input
                   type="number"
                   value={priceCents}
                   onChange={(e) => setPriceCents(e.target.value)}
                   placeholder="200 = $2.00"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-card border border-border-strong px-3 py-2 text-control focus:border-accent focus:outline-none min-h-11"
                 />
               </div>
-              <div className="col-span-2">
-                <label className="mb-1 block text-xs font-medium text-gray-600">Loại tiền</label>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs font-medium text-muted">Loại tiền</label>
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-card border border-border-strong px-3 py-2 text-control focus:border-accent focus:outline-none min-h-11"
                 >
                   <option value="usd">USD</option>
                   <option value="eur">EUR</option>
@@ -191,12 +191,12 @@ export default function AdminCoinPackagesPage() {
               </div>
             </div>
 
-            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            {error && <p className="mt-2 text-sm text-danger">{error}</p>}
 
             <button
               type="submit"
               disabled={creating}
-              className="mt-4 w-full rounded-lg bg-purple-600 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+              className="mt-4 w-full rounded-card bg-primary py-2 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
             >
               {creating ? 'Đang tạo...' : 'Tạo gói'}
             </button>
@@ -204,19 +204,19 @@ export default function AdminCoinPackagesPage() {
 
           {/* Package list */}
           {/* Package list */}
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-700">Danh sách gói</h2>
-            <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-foreground text-section-title">Danh sách gói</h2>
+            <div className="flex gap-1 rounded-card bg-surface-muted p-1">
               <button
                 onClick={() => setFilter('active')}
-                className={`rounded-md px-3 py-1 text-xs font-medium ${filter === 'active' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'
+                className={`min-h-11 rounded-card px-3 py-1 text-xs font-medium ${filter === 'active' ? 'bg-surface text-accent ring-1 ring-border' : 'text-muted'
                   }`}
               >
                 Đang bán
               </button>
               <button
                 onClick={() => setFilter('all')}
-                className={`rounded-md px-3 py-1 text-xs font-medium ${filter === 'all' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'
+                className={`min-h-11 rounded-card px-3 py-1 text-xs font-medium ${filter === 'all' ? 'bg-surface text-accent ring-1 ring-border' : 'text-muted'
                   }`}
               >
                 Tất cả {hiddenCount > 0 && `(+${hiddenCount} đã ẩn)`}
@@ -225,49 +225,49 @@ export default function AdminCoinPackagesPage() {
           </div>
 
           {loading ? (
-            <p className="text-center text-gray-400">Đang tải...</p>
+            <p className="text-center text-muted">Đang tải...</p>
           ) : packages.length === 0 ? (
-            <p className="text-center text-gray-400">Chưa có gói nào.</p>
+            <p className="text-center text-muted">Chưa có gói nào.</p>
           ) : (
             <div className="space-y-2">
               {packages.map((pkg) =>
                 editingId === pkg.id ? (
                   // Edit mode
-                  <div key={pkg.id} className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-purple-200">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="col-span-2">
-                        <label className="mb-1 block text-xs font-medium text-gray-600">Tên gói</label>
+                  <div key={pkg.id} className="rounded-card bg-surface p-4 ring-1 ring-accent-muted">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="sm:col-span-2">
+                        <label className="mb-1 block text-xs font-medium text-muted">Tên gói</label>
                         <input
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none"
+                          className="w-full rounded-card border border-border-strong px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-600">Số coin</label>
+                        <label className="mb-1 block text-xs font-medium text-muted">Số coin</label>
                         <input
                           type="number"
                           value={editCoinAmount}
                           onChange={(e) => setEditCoinAmount(e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none"
+                          className="w-full rounded-card border border-border-strong px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-600">Giá (cent)</label>
+                        <label className="mb-1 block text-xs font-medium text-muted">Giá (cent)</label>
                         <input
                           type="number"
                           value={editPriceCents}
                           onChange={(e) => setEditPriceCents(e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none"
+                          className="w-full rounded-card border border-border-strong px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11"
                         />
                       </div>
-                      <div className="col-span-2">
-                        <label className="mb-1 block text-xs font-medium text-gray-600">Loại tiền</label>
+                      <div className="sm:col-span-2">
+                        <label className="mb-1 block text-xs font-medium text-muted">Loại tiền</label>
                         <select
                           value={editCurrency}
                           onChange={(e) => setEditCurrency(e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none"
+                          className="w-full rounded-card border border-border-strong px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11"
                         >
                           <option value="usd">USD</option>
                           <option value="eur">EUR</option>
@@ -275,19 +275,19 @@ export default function AdminCoinPackagesPage() {
                       </div>
                     </div>
 
-                    {editError && <p className="mt-2 text-xs text-red-600">{editError}</p>}
+                    {editError && <p className="mt-2 text-xs text-danger">{editError}</p>}
 
                     <div className="mt-3 flex gap-2">
                       <button
                         onClick={() => handleSaveEdit(pkg.id)}
                         disabled={saving}
-                        className="flex-1 rounded-lg bg-purple-600 py-1.5 text-xs font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                        className="flex-1 rounded-card bg-primary py-1.5 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
                       >
                         {saving ? 'Đang lưu...' : 'Lưu'}
                       </button>
                       <button
                         onClick={cancelEdit}
-                        className="flex-1 rounded-lg bg-gray-100 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+                        className="min-h-11 flex-1 rounded-card bg-surface-muted py-1.5 text-xs font-semibold text-foreground hover:bg-surface-hover"
                       >
                         Huỷ
                       </button>
@@ -297,15 +297,15 @@ export default function AdminCoinPackagesPage() {
                   // View mode
                   <div
                     key={pkg.id}
-                    className="flex items-center justify-between rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-card bg-surface p-4 ring-1 ring-border"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">
+                      <p className="text-sm font-semibold text-foreground">
                         🪙 {pkg.coin_amount} — {pkg.name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted">
                         {formatPrice(pkg.price_cents, pkg.currency)} ·{' '}
-                        <span className={pkg.is_active ? 'text-green-600' : 'text-gray-400'}>
+                        <span className={pkg.is_active ? 'text-success' : 'text-muted'}>
                           {pkg.is_active ? 'Đang bán' : 'Đã ẩn'}
                         </span>
                       </p>
@@ -313,15 +313,15 @@ export default function AdminCoinPackagesPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(pkg)}
-                        className="rounded-lg bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-600 hover:bg-purple-100"
+                        className="min-h-11 rounded-card bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent-muted"
                       >
                         Sửa
                       </button>
                       <button
                         onClick={() => handleToggleActive(pkg)}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${pkg.is_active
-                          ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                          : 'bg-green-50 text-green-600 hover:bg-green-100'
+                        className={`min-h-11 rounded-card px-3 py-1.5 text-xs font-semibold ${pkg.is_active
+                          ? 'bg-danger-soft text-danger hover:bg-danger-muted'
+                          : 'bg-success-soft text-success hover:bg-success-muted'
                           }`}
                       >
                         {pkg.is_active ? 'Ẩn gói' : 'Mở bán lại'}

@@ -171,11 +171,11 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
     }
 
     if (loading) {
-        return <p className="p-10 text-center text-gray-400">Đang tải...</p>;
+        return <p className="p-10 text-center text-muted">Đang tải...</p>;
     }
 
     if (notFound || !poll) {
-        return <p className="p-10 text-center text-gray-400">Không tìm thấy bình chọn này.</p>;
+        return <p className="p-10 text-center text-muted">Không tìm thấy bình chọn này.</p>;
     }
 
     const totalVotes = poll.options.reduce((sum, opt) => sum + opt.voteCount, 0);
@@ -184,29 +184,29 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
         <div>
             {poll.background_image && (
                 <div
-                    className="h-48 w-full bg-cover bg-center"
+                    className="aspect-[16/9] w-full bg-cover bg-center"
                     style={{ backgroundImage: `url(${poll.background_image})` }}
                 />
             )}
 
-            <div className="p-5">
-                <div className="mb-3 flex items-center gap-2">
+            <div className="p-card">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
                     {poll.author.avatar_url ? (
-                        <img src={poll.author.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" />
+                        <img src={poll.author.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
                     ) : (
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-muted text-sm font-bold text-accent">
                             {poll.author.name.charAt(0).toUpperCase()}
                         </div>
                     )}
-                    <span className="text-sm font-medium text-gray-700">{poll.author.name}</span>
+                    <span className="min-w-0 flex-1 basis-24 text-author [overflow-wrap:anywhere]">{poll.author.name}</span>
                     {poll.isClosed && (
-                        <span className="ml-auto rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                        <span className="ml-auto shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-muted">
                             Đã đóng
                         </span>
                     )}
                 </div>
 
-                <h1 className="mb-4 text-xl font-semibold text-gray-900">{poll.question}</h1>
+                <h1 className="mb-4 text-secondary [overflow-wrap:anywhere] text-card-title">{poll.question}</h1>
 
                 <div className="space-y-3">
                     {poll.options.map((option) => {
@@ -229,26 +229,26 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                 {poll.allow_user_options && !poll.isClosed && (
                     <div className="mt-3">
                         {showAddOption ? (
-                            <form onSubmit={handleAddOption} className="flex gap-2">
+                            <form onSubmit={handleAddOption} className="flex flex-col gap-2 sm:flex-row">
                                 <input
                                     type="text"
                                     value={newOptionLabel}
                                     onChange={(e) => setNewOptionLabel(e.target.value)}
                                     placeholder="Nhập lựa chọn mới..."
-                                    className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none"
+                                    className="flex-1 rounded-card border border-border-strong px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11 min-w-0"
                                     autoFocus
                                 />
                                 <button
                                     type="submit"
                                     disabled={addingOption}
-                                    className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                                    className="rounded-card bg-primary px-3 py-1.5 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
                                 >
                                     Thêm
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setShowAddOption(false)}
-                                    className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
+                                    className="min-h-11 rounded-card px-3 py-1.5 text-sm text-muted hover:bg-surface-muted"
                                 >
                                     Huỷ
                                 </button>
@@ -256,7 +256,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                         ) : (
                             <button
                                 onClick={() => setShowAddOption(true)}
-                                className="text-sm font-medium text-purple-600 hover:underline"
+                                className="min-h-11 text-sm font-medium text-accent hover:underline"
                             >
                                 + Thêm lựa chọn của bạn
                             </button>
@@ -264,7 +264,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                     </div>
                 )}
 
-                <p className="mt-3 text-xs text-gray-400">{totalVotes} lượt bình chọn</p>
+                <p className="mt-3 text-xs text-muted">{totalVotes} lượt bình chọn</p>
 
                 <ReactionBar
                     reactions={poll.reactions}
@@ -275,8 +275,8 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                 />
             </div>
 
-            <div className="border-t border-gray-100 p-5">
-                <h2 className="mb-3 text-sm font-semibold text-gray-700">Bình luận</h2>
+            <div className="border-t border-border p-card">
+                <h2 className="mb-3 text-foreground text-section-title">Bình luận</h2>
 
                 <form onSubmit={handleSubmitComment} className="mb-4 flex gap-2">
                     <input
@@ -284,21 +284,21 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         placeholder={user ? 'Viết bình luận...' : 'Đăng nhập để bình luận'}
-                        className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:border-purple-400 focus:outline-none"
+                        className="flex-1 rounded-full border border-border px-4 py-2 text-control focus:border-accent focus:outline-none min-h-11 min-w-0"
                     />
                     <button
                         type="submit"
                         disabled={submittingComment}
-                        className="rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                        className="rounded-control bg-primary px-4 py-2 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
                     >
                         Gửi
                     </button>
                 </form>
 
                 {comments.length === 0 ? (
-                    <p className="text-sm text-gray-400">Chưa có bình luận nào.</p>
+                    <p className="text-sm text-muted">Chưa có bình luận nào.</p>
                 ) : (
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-border">
                         {comments.map((comment) => (
                             <CommentItem key={comment.id} comment={comment} pollAuthorId={poll.author.id} />
                         ))}
@@ -308,7 +308,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                 {commentCursor && (
                     <button
                         onClick={() => fetchComments(commentCursor)}
-                        className="mt-3 text-sm font-medium text-purple-600 hover:underline"
+                        className="min-h-11 mt-3 text-sm font-medium text-accent hover:underline"
                     >
                         Xem thêm bình luận
                     </button>

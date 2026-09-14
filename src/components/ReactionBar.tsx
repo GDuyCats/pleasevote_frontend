@@ -15,20 +15,21 @@ interface Props {
 
 export default function ReactionBar({ reactions, commentCount, myReaction, onReact, onRemove, onCommentClick }: Props) {
   return (
-    <div className="border-t border-gray-100 pt-1">
+    <div className="border-t border-border pt-1">
       <ReactionSummary reactions={reactions} commentCount={commentCount} />
 
-      <div className="flex items-center gap-0 border-t border-gray-100 pt-2">
-        <div className="flex items-center rounded-lg px-2 py-1 hover:bg-gray-50">
+      <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center rounded-card px-3 py-1 hover:bg-surface-muted">
           <ReactionButton count={0} myReaction={myReaction} onReact={onReact} onRemove={onRemove} />
         </div>
 
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onCommentClick?.();
           }}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-gray-500 transition-colors duration-150 hover:bg-gray-50"
+          className="flex min-h-11 items-center gap-2 rounded-card px-3 py-1 text-sm text-muted transition-colors duration-150 hover:bg-surface-muted"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path

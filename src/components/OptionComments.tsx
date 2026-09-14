@@ -59,30 +59,30 @@ export default function OptionComments({
   }
 
   return (
-    <div className="mt-2 rounded-lg bg-gray-50 p-3">
-      <form onSubmit={handleSubmit} className="mb-3 flex gap-2">
+    <div className="mt-2 rounded-card bg-background p-3">
+      <form onSubmit={handleSubmit} className="mb-3 flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={user ? 'Bình luận về lựa chọn này...' : 'Đăng nhập để bình luận'}
-          className="flex-1 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm focus:border-purple-400 focus:outline-none"
+          className="flex-1 rounded-full border border-border bg-surface px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11 min-w-0"
         />
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-purple-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+          className="rounded-control bg-primary px-3 py-1.5 text-on-primary hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
         >
           Gửi
         </button>
       </form>
 
       {loading ? (
-        <p className="text-xs text-gray-400">Đang tải...</p>
+        <p className="text-xs text-muted">Đang tải...</p>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-gray-400">Chưa có bình luận nào cho lựa chọn này.</p>
+        <p className="text-xs text-muted">Chưa có bình luận nào cho lựa chọn này.</p>
       ) : (
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {comments.map((c) => (
             <CommentItem key={c.id} comment={c} pollAuthorId={pollAuthorId} />
           ))}

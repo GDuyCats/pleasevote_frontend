@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { GoogleLogin } from '@react-oauth/google';
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
+  const { resolvedTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -35,28 +37,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-purple-100 to-pink-100 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-        <h1 className="mb-1 text-center text-2xl font-bold text-gray-800">🗳️ PleaseVote</h1>
-        <p className="mb-6 text-center text-gray-500">Đăng nhập vào tài khoản</p>
+    <div className="flex min-h-[calc(100dvh-var(--app-header-height))] items-center justify-center bg-background px-margin-mobile py-section">
+      <div className="w-full max-w-md rounded-panel border border-border bg-surface p-card">
+        <h1 className="mb-2 text-center text-secondary text-page-title">Chào mừng trở lại</h1>
+        <p className="mb-6 text-center text-muted">Đăng nhập vào tài khoản</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="w-full rounded-card border border-border-strong px-4 py-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-control min-h-11"
               placeholder="ban@example.com"
             />
           </div>
 
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
-              <Link href="/forgot-password" className="text-xs text-purple-600 hover:underline">
+              <label className="block text-sm font-medium text-foreground">Mật khẩu</label>
+              <Link href="/forgot-password" className="text-xs text-accent hover:underline">
                 Quên mật khẩu?
               </Link>
             </div>
@@ -65,38 +67,41 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="w-full rounded-card border border-border-strong px-4 py-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-control min-h-11"
               placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-purple-600 py-2 font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50"
+            className="w-full rounded-card bg-primary py-2 text-on-primary transition hover:bg-primary-hover disabled:opacity-50 text-label-lg min-h-11"
           >
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
-        
+
         <div className="my-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gray-200" />
-          <span className="text-xs text-gray-400">hoặc</span>
-          <div className="h-px flex-1 bg-gray-200" />
+          <div className="h-px flex-1 bg-surface-hover" />
+          <span className="text-xs text-muted">hoặc</span>
+          <div className="h-px flex-1 bg-surface-hover" />
         </div>
 
         <div className="flex justify-center">
           <GoogleLogin
+            width="240"
+            key={resolvedTheme}
+            theme={resolvedTheme === 'dark' ? 'filled_black' : 'outline'}
             onSuccess={handleGoogleSuccess}
             onError={() => setError('Đăng nhập Google thất bại')}
           />
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-muted">
           Chưa có tài khoản?{' '}
-          <Link href="/register" className="font-medium text-purple-600 hover:underline">
+          <Link href="/register" className="font-medium text-accent hover:underline">
             Đăng ký
           </Link>
         </p>

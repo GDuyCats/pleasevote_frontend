@@ -89,28 +89,28 @@ function CommentRow({
       {comment.user.avatar_url ? (
         <img src={comment.user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
       ) : (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-600">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-muted text-xs font-bold text-accent">
           {comment.user.name.charAt(0).toUpperCase()}
         </div>
       )}
 
-      <div className="flex-1">
-        <div className="rounded-2xl bg-gray-100 px-3 py-2">
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-semibold text-gray-800">{comment.user.name}</p>
+      <div className="min-w-0 flex-1">
+        <div className="rounded-card bg-surface-muted px-3 py-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="text-author text-secondary [overflow-wrap:anywhere]">{comment.user.name}</p>
             {isAuthor && (
-              <span className="rounded-full bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold text-purple-600">
+              <span className="rounded-full bg-accent-muted px-1.5 py-0.5 text-label-sm font-semibold text-accent">
                 Tác giả
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-700">
-            {replyingToName && <span className="mr-1 font-medium text-purple-600">@{replyingToName}</span>}
+          <p className="whitespace-pre-wrap text-body-lg text-foreground [overflow-wrap:anywhere]">
+            {replyingToName && <span className="mr-1 font-medium text-accent">@{replyingToName}</span>}
             {comment.content}
           </p>
         </div>
 
-        <div className="mt-1 flex items-center gap-3 pl-3 text-xs text-gray-500">
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 pl-3 text-body-sm text-muted">
           <span>{formatRelativeTime(comment.created_at)}</span>
           <ReactionButton
             count={comment.totalReactions}
@@ -119,21 +119,21 @@ function CommentRow({
             onRemove={handleRemoveReact}
             size="sm"
           />
-          <button onClick={() => setShowReplyBox((v) => !v)} className="font-medium hover:underline">
+          <button onClick={() => setShowReplyBox((v) => !v)} className="min-h-11 font-medium hover:underline">
             Phản hồi
           </button>
         </div>
 
         {showReplyBox && (
-          <form onSubmit={handleSubmitReply} className="mt-2 flex gap-2 pl-3">
+          <form onSubmit={handleSubmitReply} className="mt-2 flex flex-col gap-2 pl-1 sm:flex-row sm:pl-3">
             <input
               type="text"
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder="Viết phản hồi..."
-              className="flex-1 rounded-full border border-gray-200 px-3 py-1.5 text-sm focus:border-purple-400 focus:outline-none"
+              className="flex-1 rounded-full border border-border px-3 py-1.5 text-control focus:border-accent focus:outline-none min-h-11 min-w-0"
             />
-            <button type="submit" className="text-sm font-medium text-purple-600">
+            <button type="submit" className="min-h-11 text-sm font-medium text-accent">
               Gửi
             </button>
           </form>
@@ -243,7 +243,7 @@ export default function CommentItem({ comment: initial, pollAuthorId }: { commen
         <button
           onClick={handleToggleReplies}
           disabled={loading}
-          className="mt-2 pl-11 text-xs font-semibold text-gray-500 hover:underline"
+          className="min-h-11 mt-2 pl-11 text-xs font-semibold text-muted hover:underline"
         >
           {loading ? 'Đang tải...' : showReplies ? 'Ẩn phản hồi' : `Xem ${comment.replyCount} phản hồi`}
         </button>
@@ -254,7 +254,7 @@ export default function CommentItem({ comment: initial, pollAuthorId }: { commen
           {flatItems.map((item) => (
             <div
               key={item.comment.id}
-              className={item.visualDepth === 1 ? 'ml-8 border-l-2 border-gray-100 pl-4' : 'ml-16 border-l-2 border-gray-100 pl-4'}
+              className={item.visualDepth === 1 ? 'ml-2 border-l border-border pl-2 sm:ml-8 sm:pl-4' : 'ml-4 border-l border-border pl-2 sm:ml-16 sm:pl-4'}
             >
               <CommentRow
                 comment={item.comment}
@@ -266,7 +266,7 @@ export default function CommentItem({ comment: initial, pollAuthorId }: { commen
               {item.comment.replyCount > 0 && !loadedParentIds.has(item.comment.id) && (
                 <button
                   onClick={() => loadChildrenOf(item.comment.id, item.comment.user.name, item.visualDepth)}
-                  className="mt-2 pl-11 text-xs font-semibold text-gray-500 hover:underline"
+                  className="min-h-11 mt-2 pl-11 text-xs font-semibold text-muted hover:underline"
                 >
                   Xem {item.comment.replyCount} phản hồi
                 </button>

@@ -19,7 +19,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   }, [user, loading]);
 
   if (loading || !user || user.role !== 'admin') {
-    return <p className="mt-10 text-center text-gray-400">Đang kiểm tra quyền truy cập...</p>;
+    return <p className="mt-10 text-center text-muted">Đang kiểm tra quyền truy cập...</p>;
   }
 
   return <>{children}</>;

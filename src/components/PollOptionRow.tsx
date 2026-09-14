@@ -68,22 +68,27 @@ export default function PollOptionRow({
   return (
     <div>
       <button
+        type="button"
         onClick={() => onVote(option.id)}
         disabled={disabled}
-        className="relative w-full overflow-hidden rounded-lg border border-gray-200 px-4 py-2.5 text-left transition hover:border-purple-300 disabled:cursor-not-allowed disabled:opacity-70"
+        className="min-h-11 relative w-full overflow-hidden rounded-card border border-border bg-background px-4 py-3 text-left transition-colors enabled:hover:border-accent disabled:cursor-not-allowed"
       >
-        <div className="absolute inset-y-0 left-0 bg-purple-100 transition-all" style={{ width: `${percent}%` }} />
-        <div className="relative flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-800">{option.label}</span>
-          <span className="text-xs font-semibold text-gray-500">
-            {option.voteCount} phiếu · {percent}%
+        <div aria-hidden="true" className="absolute inset-y-0 left-0 bg-accent-muted transition-[width] motion-reduce:transition-none" style={{ width: `${percent}%` }} />
+        <div className="relative flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <span className="min-w-0 flex-1 basis-28">
+            <span className="block text-body-lg text-foreground [overflow-wrap:anywhere]">{option.label}</span>
+            {option.description && <span className="mt-1 block text-xs leading-5 break-words text-muted">{option.description}</span>}
+          </span>
+          <span className="ml-auto max-w-full text-right [overflow-wrap:anywhere]">
+            <span className="block text-sm font-semibold tabular-nums text-foreground">{percent}%</span>
+            <span className="mt-0.5 block text-label-sm tabular-nums text-muted">{option.voteCount} phiếu</span>
           </span>
         </div>
       </button>
 
       <ReactionSummary reactions={option.reactions || ({} as any)} commentCount={option.commentCount || 0} />
 
-      <div className="mt-1 flex items-center gap-4 pl-1 text-xs text-gray-400">
+      <div className="mt-1 flex min-h-8 items-center gap-4 px-1 text-xs text-muted">
         <ReactionButton
           count={0}
           myReaction={option.myReaction || null}
@@ -91,7 +96,7 @@ export default function PollOptionRow({
           onRemove={handleRemoveReact}
           size="sm"
         />
-        <button onClick={() => setShowComments((v) => !v)} className="font-medium hover:underline">
+        <button type="button" aria-expanded={showComments} onClick={() => setShowComments((v) => !v)} className="min-h-11 font-medium hover:text-accent">
           {showComments ? 'Ẩn bình luận' : 'Bình luận'}
         </button>
       </div>

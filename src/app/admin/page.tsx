@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import Navbar from '@/components/Navbar';
+
 import AdminGuard from '@/components/AdminGuard';
 import AdminNav from '@/components/AdminNav';
 
@@ -17,10 +17,10 @@ interface Stats {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-gray-400">{sub}</p>}
+    <div className="min-w-0 rounded-card bg-surface p-card ring-1 ring-border">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 text-metric tabular-nums [overflow-wrap:anywhere] text-foreground">{value}</p>
+      {sub && <p className="mt-0.5 text-xs text-muted">{sub}</p>}
     </div>
   );
 }
@@ -51,22 +51,22 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <div className="bg-background">
 
-        <main className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="mb-1 text-xl font-bold text-gray-900">Bảng điều khiển</h1>
-          <p className="mb-4 text-sm text-gray-500">Tổng quan hoạt động hệ thống</p>
+
+        <main className="page-shell max-w-4xl">
+          <h1 className="mb-1 text-foreground text-page-title">Bảng điều khiển</h1>
+          <p className="mb-4 text-sm text-muted">Tổng quan hoạt động hệ thống</p>
 
           <AdminNav />
 
           {loading || !stats ? (
-            <p className="text-center text-gray-400">Đang tải...</p>
+            <p className="text-center text-muted">Đang tải...</p>
           ) : (
             <div className="space-y-6">
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Người dùng</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <h2 className="mb-2 text-muted text-section-title">Người dùng</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
                   <StatCard label="Tổng số" value={stats.users.total} />
                   <StatCard label="Mới hôm nay" value={stats.users.newToday} />
                   <StatCard label="Mới tuần này" value={stats.users.newThisWeek} />
@@ -75,8 +75,8 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Bình chọn</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <h2 className="mb-2 text-muted text-section-title">Bình chọn</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
                   <StatCard label="Tổng số" value={stats.polls.total} />
                   <StatCard label="Công khai" value={stats.polls.public} />
                   <StatCard label="Đã đóng" value={stats.polls.closed} />
@@ -85,16 +85,16 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Kiểm duyệt (cần xử lý)</h2>
-                <div className="grid grid-cols-2 gap-3">
+                <h2 className="mb-2 text-muted text-section-title">Kiểm duyệt (cần xử lý)</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
                   <StatCard label="Báo cáo chờ xử lý" value={stats.moderation.pendingReports} />
                   <StatCard label="Khiếu nại chờ xử lý" value={stats.moderation.pendingAppeals} />
                 </div>
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Doanh thu</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <h2 className="mb-2 text-muted text-section-title">Doanh thu</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
                   {stats.revenue.byCurrency.map((r) => (
                     <StatCard
                       key={r.currency}
@@ -108,8 +108,8 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Sticker Marketplace</h2>
-                <div className="grid grid-cols-2 gap-3">
+                <h2 className="mb-2 text-muted text-section-title">Sticker Marketplace</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
                   <StatCard label="Tổng sticker" value={stats.marketplace.totalStickers} />
                   <StatCard label="Lượt mua" value={stats.marketplace.totalStickerPurchases} />
                 </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCoin } from '@/context/CoinContext';
-import Navbar from '@/components/Navbar';
+
 
 export default function CoinsSuccessPage() {
   const { balance, refreshBalance } = useCoin();
@@ -32,24 +32,24 @@ export default function CoinsSuccessPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="bg-background">
 
-      <main className="mx-auto max-w-md px-4 py-16 text-center">
-        <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-100">
+
+      <main className="page-shell max-w-md text-center">
+        <div className="rounded-card bg-surface p-8 ring-1 ring-border">
           <div className="mb-4 text-5xl">🎉</div>
-          <h1 className="mb-2 text-xl font-bold text-gray-900">Thanh toán thành công!</h1>
-          <p className="mb-6 text-sm text-gray-500">
+          <h1 className="mb-2 text-foreground text-page-title">Thanh toán thành công!</h1>
+          <p className="mb-6 text-sm text-muted">
             {checking
               ? 'Đang cập nhật số coin của bạn...'
               : 'Coin của bạn đã được cộng vào tài khoản.'}
           </p>
 
-          <p className="mb-6 text-3xl font-bold text-yellow-600">🪙 {balance ?? '...'}</p>
+          <p className="mb-6 text-3xl font-bold text-warning">🪙 {balance ?? '...'}</p>
 
           <Link
             href="/"
-            className="inline-block rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white hover:bg-purple-700"
+            className="inline-block rounded-card bg-primary px-6 py-2 text-on-primary hover:bg-primary-hover text-label-lg min-h-11"
           >
             Về trang chủ
           </Link>
