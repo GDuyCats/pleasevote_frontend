@@ -1,19 +1,16 @@
-export function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+import { createTranslator, locales, type Language } from './i18n';
 
-  if (diffSeconds < 60) return 'Vừa xong';
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours} giờ trước`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays} ngày trước`;
-  const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks < 4) return `${diffWeeks} tuần trước`;
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths < 12) return `${diffMonths} tháng trước`;
-  const diffYears = Math.floor(diffDays / 365);
-  return `${diffYears} năm trước`;
+export function formatRelativeTime(dateString: string, language: Language = 'vi'): string {
+  const timestamp = new Date(dateString).getTime();
+  if (Number.isNaN(timestamp)) return '—';
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return createTranslator(language)('Vừa xong');
+  const formatter = new Intl.RelativeTimeFormat(locales[language], { numeric: 'always' });
+  if (seconds < 3600) return formatter.format(-Math.floor(seconds / 60), 'minute');
+  if (seconds < 86400) return formatter.format(-Math.floor(seconds / 3600), 'hour');
+  const days = Math.floor(seconds / 86400);
+  if (days < 7) return formatter.format(-days, 'day');
+  if (days < 30) return formatter.format(-Math.floor(days / 7), 'week');
+  if (days < 365) return formatter.format(-Math.floor(days / 30), 'month');
+  return formatter.format(-Math.floor(days / 365), 'year');
 }

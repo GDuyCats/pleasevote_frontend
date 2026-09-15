@@ -1,50 +1,43 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import Link from 'next/link';
+import AppIcon from '@/components/AppIcon';
+import Dialog from '@/components/Dialog';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
 
 export default function AuthPromptModal() {
+  const { translate } = useLanguage();
   const { isOpen, message, closePrompt } = useAuthPrompt();
 
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
-      onClick={closePrompt}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 text-4xl">💜</div>
-        <h2 className="mb-2 text-lg font-bold text-gray-900">Tham gia PleaseVote</h2>
-        <p className="mb-6 text-sm text-gray-500">{message}</p>
+    <Dialog onClose={closePrompt} label={translate("Tham gia PleaseVote")} className="max-w-sm text-center">
+        <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-panel bg-accent-soft text-accent"><AppIcon name="message" className="h-6 w-6" /></span>
+        <h2 className="mb-2 text-foreground text-card-title">{translate("Tham gia PleaseVote")}</h2>
+        <p className="mb-6 text-body-md text-muted">{translate(message)}</p>
 
         <div className="space-y-2">
           <Link
             href="/login"
             onClick={closePrompt}
-            className="block w-full rounded-full bg-purple-600 py-2.5 text-sm font-semibold text-white hover:bg-purple-700"
+            className="ui-button ui-button-primary w-full"
           >
-            Đăng nhập
-          </Link>
+            {translate("Đăng nhập")} </Link>
           <Link
             href="/register"
             onClick={closePrompt}
-            className="block w-full rounded-full border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            className="block w-full rounded-full border border-border-strong py-2.5 text-body-md font-semibold text-foreground hover:bg-background"
           >
-            Đăng ký
-          </Link>
+            {translate("Đăng ký")} </Link>
         </div>
 
         <button
           onClick={closePrompt}
-          className="mt-4 text-xs text-gray-400 hover:text-gray-600"
+          className="ui-button ui-button-ghost mt-4 text-muted hover:text-muted"
         >
-          Để sau
-        </button>
-      </div>
-    </div>
+          {translate("Để sau")} </button>
+    </Dialog>
   );
 }

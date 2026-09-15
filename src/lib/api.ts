@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { endpoints } from '@/services/endpoints';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -34,7 +35,7 @@ api.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}${endpoints.auth.refresh}`, {
           refreshToken,
         });
 

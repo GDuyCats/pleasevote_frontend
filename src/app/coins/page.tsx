@@ -1,13 +1,18 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
+import AppIcon from '@/components/AppIcon';
+
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { coinPackageService } from '@/services/coin-package.service';
+import { coinService } from '@/services/coin.service';
 import { CoinPackage } from '@/types/coin';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
-import Navbar from '@/components/Navbar';
+
 
 export default function CoinsPage() {
+  const { translate, locale, formatNumber } = useLanguage();
   const [packages, setPackages] = useState<CoinPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasingId, setPurchasingId] = useState<number | null>(null);
@@ -21,7 +26,7 @@ export default function CoinsPage() {
   async function fetchPackages() {
     setLoading(true);
     try {
-      const { data } = await api.get('/coin-packages');
+      const data = await coinPackageService.list();
       setPackages(data);
     } finally {
       setLoading(false);
@@ -36,7 +41,7 @@ export default function CoinsPage() {
 
     setPurchasingId(packageId);
     try {
-      const { data } = await api.post('/coins/checkout', { coin_package_id: packageId });
+      const data = await coinService.checkout(packageId);
       window.location.href = data.checkoutUrl;
     } catch (err) {
       console.error('Checkout failed', err);
@@ -45,42 +50,42 @@ export default function CoinsPage() {
   }
 
   function formatPrice(cents: number, currency: string) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: currency.toUpperCase() }).format(
       cents / 100
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="bg-background">
 
-      <main className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="mb-1 text-xl font-bold text-gray-900">Nạp Coin</h1>
-        <p className="mb-6 text-sm text-gray-500">Dùng coin để mua sticker độc quyền từ cộng đồng.</p>
+
+      <main className="page-shell">
+        <h1 className="mb-1 text-foreground text-page-title">{translate("Nạp Coin")}</h1>
+        <p className="mb-6 text-body-md text-muted">{translate("Dùng coin để mua sticker độc quyền từ cộng đồng.")}</p>
 
         {loading ? (
-          <p className="text-center text-gray-400">Đang tải...</p>
+          <p className="text-center text-muted">{translate("Đang tải...")}</p>
         ) : packages.length === 0 ? (
-          <p className="text-center text-gray-400">Chưa có gói coin nào.</p>
+          <p className="text-center text-muted">{translate("Chưa có gói coin nào.")}</p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))] gap-4">
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="flex flex-col items-center rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-gray-100"
+                className="ui-card flex min-w-0 flex-col items-center text-center"
               >
-                <span className="text-3xl">🪙</span>
-                <p className="mt-2 text-lg font-bold text-gray-900">{pkg.coin_amount}</p>
-                <p className="text-xs text-gray-400">{pkg.name}</p>
-                <p className="mt-2 text-sm font-semibold text-purple-600">
+                <span className="flex h-12 w-12 items-center justify-center rounded-media bg-accent-soft text-accent"><AppIcon name="coin" className="h-6 w-6" /></span>
+                <p className="mt-2 max-w-full text-metric tabular-nums [overflow-wrap:anywhere] text-foreground">{formatNumber(pkg.coin_amount)}</p>
+                <p className="max-w-full text-body-sm text-muted [overflow-wrap:anywhere]">{pkg.name}</p>
+                <p className="mt-2 max-w-full text-section-title [overflow-wrap:anywhere] text-accent">
                   {formatPrice(pkg.price_cents, pkg.currency)}
                 </p>
                 <button
                   onClick={() => handleBuy(pkg.id)}
                   disabled={purchasingId === pkg.id}
-                  className="mt-4 w-full rounded-lg bg-purple-600 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                  className="ui-button ui-button-primary mt-4 w-full disabled:opacity-50"
                 >
-                  {purchasingId === pkg.id ? 'Đang chuyển...' : 'Mua ngay'}
+                  {purchasingId === pkg.id ? translate("Đang chuyển...") : translate("Mua ngay")}
                 </button>
               </div>
             ))}

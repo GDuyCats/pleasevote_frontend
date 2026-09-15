@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from '@/context/AuthContext';
 import { CoinProvider } from '@/context/CoinContext';
 import { AuthPromptProvider } from '@/context/AuthPromptContext';
@@ -8,9 +7,13 @@ import { PollModalProvider } from '@/context/PollModalContext';
 import CreatePollModal from '@/components/CreatePollModal';
 import AuthPromptModal from '@/components/AuthPromptModal';
 import AppShell from '@/components/AppShell';
+import { ThemeProvider } from '@/context/ThemeContext';
+import { themeInitScript } from '@/lib/theme';
+import { LanguageProvider } from '@/context/LanguageContext';
+import { languageInitScript } from '@/lib/i18n';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-inter', display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'PleaseVote',
@@ -25,22 +28,28 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
-      <body className={inter.className}>
-        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string}>
-          <AuthProvider>
-            <CoinProvider>
-              <AuthPromptProvider>
-                <PollModalProvider>
-                  <AppShell>{children}</AppShell>
-                  {modal}
-                  <CreatePollModal />
-                  <AuthPromptModal />
-                </PollModalProvider>
-              </AuthPromptProvider>
-            </CoinProvider>
-          </AuthProvider>
-        </GoogleOAuthProvider>
+    <html lang="vi" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: languageInitScript }} />
+      </head>
+      <body className="font-sans antialiased">
+        <LanguageProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <CoinProvider>
+                <AuthPromptProvider>
+                  <PollModalProvider>
+                    <AppShell>{children}</AppShell>
+                    {modal}
+                    <CreatePollModal />
+                    <AuthPromptModal />
+                  </PollModalProvider>
+                </AuthPromptProvider>
+              </CoinProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

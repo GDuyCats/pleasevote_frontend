@@ -33,3 +33,8 @@ export interface SlotStatus {
   slotPackSize: number;
   slotPackPriceCoins: number;
 }
+export interface CreateStickerInput {
+  name: string;
+  price_coins: string | number;
+  image: File;
+}

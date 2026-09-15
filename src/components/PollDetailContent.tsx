@@ -1,8 +1,10 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { pollService } from '@/services/poll.service';
+import { commentService } from '@/services/comment.service';
 import { PollDetail, Comment } from '@/types/poll';
 import { useAuth } from '@/context/AuthContext';
 import ReactionBar from '@/components/ReactionBar';
@@ -11,6 +13,7 @@ import PollOptionRow from '@/components/PollOptionRow';
 import { useAuthPrompt } from '@/context/AuthPromptContext';
 
 export default function PollDetailContent({ pollId }: { pollId: string }) {
+  const { translate } = useLanguage();
     const router = useRouter();
     const { user } = useAuth();
 
@@ -19,6 +22,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
     const [commentCursor, setCommentCursor] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [voting, setVoting] = useState<number | null>(null);
+    const [voteError, setVoteError] = useState('');
     const [commentText, setCommentText] = useState('');
     const [submittingComment, setSubmittingComment] = useState(false);
     const [notFound, setNotFound] = useState(false);
@@ -31,7 +35,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
 
     async function fetchPoll() {
         try {
-            const { data } = await api.get(`/polls/${pollId}`);
+            const data = await pollService.getById(pollId);
             setPoll(data);
         } catch (err) {
             setNotFound(true);
@@ -39,9 +43,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
     }
 
     async function fetchComments(cursor?: number) {
-        const { data } = await api.get(`/comments/polls/${pollId}`, {
-            params: cursor ? { cursor, limit: 10 } : { limit: 10 },
-        });
+        const data = await commentService.listForPoll(pollId, cursor ? { cursor, limit: 10 } : { limit: 10 });
         setComments((prev) => (cursor ? [...prev, ...data.data] : data.data));
         setCommentCursor(data.nextCursor);
     }
@@ -57,9 +59,12 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
             return;
         }
         setVoting(optionId);
+        setVoteError('');
         try {
-            await api.post(`/polls/${pollId}/vote`, { poll_option_id: optionId });
+            await pollService.vote(pollId, optionId);
             await fetchPoll();
+        } catch {
+            setVoteError('Chưa thể gửi bình chọn. Bạn thử lại nhé.');
         } finally {
             setVoting(null);
         }
@@ -85,7 +90,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
 
         setAddingOption(true);
         try {
-            await api.post(`/polls/${pollId}/options`, { label: newOptionLabel });
+            await pollService.addOption(pollId, newOptionLabel);
             setNewOptionLabel('');
             setShowAddOption(false);
             await fetchPoll();
@@ -129,7 +134,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
         applyOptimisticReaction(type);
 
         try {
-            await api.post(`/polls/${pollId}/react`, { type });
+            await pollService.react(pollId, type);
         } catch {
             await fetchPoll();
         }
@@ -144,7 +149,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
         applyOptimisticReaction(null);
 
         try {
-            await api.delete(`/polls/${pollId}/react`);
+            await pollService.removeReaction(pollId);
         } catch {
             await fetchPoll();
         }
@@ -161,7 +166,7 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
 
         setSubmittingComment(true);
         try {
-            await api.post(`/comments/polls/${pollId}`, { content: commentText });
+            await commentService.create(pollId, { content: commentText });
             setCommentText('');
             await fetchComments();
             await fetchPoll();
@@ -171,11 +176,11 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
     }
 
     if (loading) {
-        return <p className="p-10 text-center text-gray-400">Đang tải...</p>;
+        return <p className="p-10 text-center text-muted">{translate("Đang tải...")}</p>;
     }
 
     if (notFound || !poll) {
-        return <p className="p-10 text-center text-gray-400">Không tìm thấy bình chọn này.</p>;
+        return <p className="p-10 text-center text-muted">{translate("Không tìm thấy bình chọn này.")}</p>;
     }
 
     const totalVotes = poll.options.reduce((sum, opt) => sum + opt.voteCount, 0);
@@ -184,29 +189,28 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
         <div>
             {poll.background_image && (
                 <div
-                    className="h-48 w-full bg-cover bg-center"
+                    className="aspect-[16/9] w-full bg-cover bg-center"
                     style={{ backgroundImage: `url(${poll.background_image})` }}
                 />
             )}
 
-            <div className="p-5">
-                <div className="mb-3 flex items-center gap-2">
+            <div className="p-card">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
                     {poll.author.avatar_url ? (
-                        <img src={poll.author.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" />
+                        <img src={poll.author.avatar_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
                     ) : (
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-muted text-body-md font-bold text-accent">
                             {poll.author.name.charAt(0).toUpperCase()}
                         </div>
                     )}
-                    <span className="text-sm font-medium text-gray-700">{poll.author.name}</span>
+                    <span className="min-w-0 flex-1 basis-24 text-author [overflow-wrap:anywhere]">{poll.author.name}</span>
                     {poll.isClosed && (
-                        <span className="ml-auto rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
-                            Đã đóng
-                        </span>
+                        <span className="ml-auto shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-metadata font-medium text-muted">
+                            {translate("Đã đóng")} </span>
                     )}
                 </div>
 
-                <h1 className="mb-4 text-xl font-semibold text-gray-900">{poll.question}</h1>
+                <h1 className="mb-4 text-foreground [overflow-wrap:anywhere] text-card-title">{poll.question}</h1>
 
                 <div className="space-y-3">
                     {poll.options.map((option) => {
@@ -216,7 +220,8 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                                 key={option.id}
                                 option={option}
                                 percent={percent}
-                                disabled={poll.isClosed || voting === option.id}
+                                pending={voting === option.id}
+                                disabled={poll.isClosed || voting !== null}
                                 pollAuthorId={poll.author.id}
                                 pollId={poll.id}
                                 onVote={handleVote}
@@ -226,45 +231,45 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                     })}
                 </div>
 
+                {voteError && <p role="alert" className="ui-feedback mt-3 bg-danger-soft text-danger">{translate(voteError)}</p>}
+
                 {poll.allow_user_options && !poll.isClosed && (
                     <div className="mt-3">
                         {showAddOption ? (
-                            <form onSubmit={handleAddOption} className="flex gap-2">
+                            <form onSubmit={handleAddOption} className="flex flex-col gap-2 sm:flex-row">
                                 <input
                                     type="text"
                                     value={newOptionLabel}
+                                    aria-label={translate("Lựa chọn mới")}
                                     onChange={(e) => setNewOptionLabel(e.target.value)}
-                                    placeholder="Nhập lựa chọn mới..."
-                                    className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-purple-500 focus:outline-none"
+                                    placeholder={translate("Nhập lựa chọn mới...")}
+                                    className="ui-input flex-1 min-w-0"
                                     autoFocus
                                 />
                                 <button
                                     type="submit"
                                     disabled={addingOption}
-                                    className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                                    className="ui-button ui-button-primary disabled:opacity-50"
                                 >
-                                    Thêm
-                                </button>
+                                    {translate("Thêm")} </button>
                                 <button
                                     type="button"
                                     onClick={() => setShowAddOption(false)}
-                                    className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
+                                    className="ui-button ui-button-ghost text-muted hover:bg-surface-muted"
                                 >
-                                    Huỷ
-                                </button>
+                                    {translate("Huỷ")} </button>
                             </form>
                         ) : (
                             <button
                                 onClick={() => setShowAddOption(true)}
-                                className="text-sm font-medium text-purple-600 hover:underline"
+                                className="ui-button ui-button-ghost text-accent hover:underline"
                             >
-                                + Thêm lựa chọn của bạn
-                            </button>
+                                {translate("+ Thêm lựa chọn của bạn")} </button>
                         )}
                     </div>
                 )}
 
-                <p className="mt-3 text-xs text-gray-400">{totalVotes} lượt bình chọn</p>
+                <p className="mt-3 text-metadata text-muted">{translate('pollVotes', { count: totalVotes })}</p>
 
                 <ReactionBar
                     reactions={poll.reactions}
@@ -275,30 +280,30 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                 />
             </div>
 
-            <div className="border-t border-gray-100 p-5">
-                <h2 className="mb-3 text-sm font-semibold text-gray-700">Bình luận</h2>
+            <div className="border-t border-border p-card">
+                <h2 className="mb-3 text-foreground text-section-title">{translate("Bình luận")}</h2>
 
-                <form onSubmit={handleSubmitComment} className="mb-4 flex gap-2">
+                <form onSubmit={handleSubmitComment} className="mb-4 flex flex-col gap-2 sm:flex-row">
                     <input
                         type="text"
                         value={commentText}
+                        aria-label={translate("Nội dung bình luận")}
                         onChange={(e) => setCommentText(e.target.value)}
-                        placeholder={user ? 'Viết bình luận...' : 'Đăng nhập để bình luận'}
-                        className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:border-purple-400 focus:outline-none"
+                        placeholder={user ? translate("Viết bình luận...") : translate("Đăng nhập để bình luận")}
+                        className="ui-input flex-1 min-w-0"
                     />
                     <button
                         type="submit"
                         disabled={submittingComment}
-                        className="rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                        className="ui-button ui-button-primary disabled:opacity-50"
                     >
-                        Gửi
-                    </button>
+                        {translate("Gửi")} </button>
                 </form>
 
                 {comments.length === 0 ? (
-                    <p className="text-sm text-gray-400">Chưa có bình luận nào.</p>
+                    <p className="text-body-md text-muted">{translate("Chưa có bình luận nào.")}</p>
                 ) : (
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-border">
                         {comments.map((comment) => (
                             <CommentItem key={comment.id} comment={comment} pollAuthorId={poll.author.id} />
                         ))}
@@ -308,10 +313,9 @@ export default function PollDetailContent({ pollId }: { pollId: string }) {
                 {commentCursor && (
                     <button
                         onClick={() => fetchComments(commentCursor)}
-                        className="mt-3 text-sm font-medium text-purple-600 hover:underline"
+                        className="ui-button ui-button-ghost mt-3 text-accent hover:underline"
                     >
-                        Xem thêm bình luận
-                    </button>
+                        {translate("Xem thêm bình luận")} </button>
                 )}
             </div>
         </div>

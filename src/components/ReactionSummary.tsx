@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { ReactionBreakdown } from '@/types/poll';
 
 const REACTION_EMOJIS: Record<string, string> = {
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function ReactionSummary({ reactions, commentCount }: Props) {
+  const { translate, formatNumber } = useLanguage();
   const sorted = Object.entries(reactions)
     .filter(([key, count]) => count > 0 && REACTION_EMOJIS[key])
     .sort((a, b) => b[1] - a[1]);
@@ -27,21 +29,21 @@ export default function ReactionSummary({ reactions, commentCount }: Props) {
   if (total === 0 && commentCount === 0) return null;
 
   return (
-    <div className="flex items-center justify-between py-1.5 text-xs text-gray-500">
+    <div className="flex items-center justify-between py-1.5 text-metadata text-muted">
       <div className="flex items-center gap-1.5">
         {topThree.length > 0 && (
           <span className="flex items-center gap-0.5">
             {topThree.map(([key]) => (
-              <span key={key} className="text-xl">
+              <span key={key} className="text-card-title">
                 {REACTION_EMOJIS[key]}
               </span>
             ))}
           </span>
         )}
-        {total > 0 && <span>{total}</span>}
+        {total > 0 && <span>{formatNumber(total)}</span>}
       </div>
 
-      {commentCount > 0 && <span>{commentCount} bình luận</span>}
+      {commentCount > 0 && <span>{translate('comments', { count: commentCount })}</span>}
     </div>
   );
 }

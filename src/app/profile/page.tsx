@@ -1,23 +1,15 @@
 'use client';
 
+import type { FullProfile } from '@/types/user';
+import { getErrorMessage } from '@/lib/i18n';
+import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { userService } from '@/services/user.service';
 import { useAuth } from '@/context/AuthContext';
-import Navbar from '@/components/Navbar';
-
-interface FullProfile {
-    id: number;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-    role: string;
-    coin_balance: number;
-    email_verified: boolean;
-    created_at: string;
-}
 
 export default function ProfilePage() {
+  const { translate, formatDate, formatNumber } = useLanguage();
     const { user, loading: authLoading, updateUser } = useAuth();
     const router = useRouter();
 
@@ -42,7 +34,7 @@ export default function ProfilePage() {
     async function fetchProfile() {
         setLoading(true);
         try {
-            const { data } = await api.get('/users/me');
+            const data = await userService.getProfile();
             setProfile(data);
             setName(data.name);
         } finally {
@@ -56,12 +48,12 @@ export default function ProfilePage() {
         setMessage('');
         setSaving(true);
         try {
-            const { data } = await api.patch('/users/me', { name });
+            const data = await userService.updateProfile({ name });
             setProfile(data);
             updateUser({ name: data.name });
             setMessage('Đã cập nhật tên thành công');
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Cập nhật thất bại');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, 'Cập nhật thất bại'));
         } finally {
             setSaving(false);
         }
@@ -74,16 +66,12 @@ export default function ProfilePage() {
         setUploadingAvatar(true);
         setError('');
         try {
-            const formData = new FormData();
-            formData.append('avatar', file);
 
-            const { data } = await api.post('/users/me/avatar', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            const data = await userService.uploadAvatar(file);
 
             setProfile((prev) => (prev ? { ...prev, avatar_url: data.avatar_url } : prev));
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Tải ảnh thất bại');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, 'Tải ảnh thất bại'));
         } finally {
             setUploadingAvatar(false);
         }
@@ -91,40 +79,39 @@ export default function ProfilePage() {
 
     if (authLoading || loading || !profile) {
         return (
-            <div className="min-h-screen bg-gray-50">
-                <Navbar />
-                <p className="mt-10 text-center text-gray-400">Đang tải...</p>
+            <div className="bg-background">
+
+                <p className="mt-10 text-center text-muted">{translate("Đang tải...")}</p>
             </div>
         );
     }
 
-    const joinedDate = new Date(profile.created_at).toLocaleDateString('vi-VN', {
+    const joinedDate = formatDate(profile.created_at, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
     });
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Navbar />
+        <div className="bg-background">
 
-            <main className="mx-auto max-w-lg px-4 py-8">
-                <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                    <h1 className="mb-6 text-xl font-bold text-gray-900">Hồ sơ của bạn</h1>
+            <main className="page-shell">
+                <div className="ui-card">
+                    <h1 className="mb-6 text-foreground text-page-title">{translate("Hồ sơ của bạn")}</h1>
 
                     {/* Avatar */}
-                    <div className="mb-6 flex flex-col items-center">
+                    <div className="mb-6 flex flex-col items-start">
                         <div className="relative">
                             {profile.avatar_url ? (
                                 <img src={profile.avatar_url} alt="" className="h-24 w-24 rounded-full object-cover" />
                             ) : (
-                                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-purple-100 text-3xl font-bold text-purple-600">
+                                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-accent-muted text-metric font-bold text-accent">
                                     {profile.name.charAt(0).toUpperCase()}
                                 </div>
                             )}
-                            <label className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-purple-600 text-white shadow hover:bg-purple-700">
+                            <label className="absolute bottom-0 right-0 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-primary text-on-primary ring-1 ring-border hover:bg-primary-hover focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
                                 {uploadingAvatar ? (
-                                    <span className="text-xs">...</span>
+                                    <span className="text-metadata">...</span>
                                 ) : (
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path
@@ -140,56 +127,58 @@ export default function ProfilePage() {
                                     accept="image/*"
                                     onChange={handleAvatarChange}
                                     disabled={uploadingAvatar}
-                                    className="hidden"
+                                    aria-label={translate("Đổi ảnh đại diện")}
+                                    className="sr-only peer"
                                 />
                             </label>
                         </div>
                     </div>
 
                     {/* Editable name */}
-                    <form onSubmit={handleSaveName} className="mb-6 space-y-3">
+                    <form onSubmit={handleSaveName} className="mb-6 max-w-2xl space-y-3">
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Tên hiển thị</label>
+                            <label htmlFor="profile-name" className="mb-1 block text-foreground text-label-lg">{translate("Tên hiển thị")}</label>
                             <input
+                                id="profile-name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                className="ui-input w-full"
                             />
                         </div>
 
-                        {error && <p className="text-sm text-red-600">{error}</p>}
-                        {message && <p className="text-sm text-green-600">{message}</p>}
+                        {error && <p role="alert" className="ui-feedback bg-danger-soft text-danger">{translate(error)}</p>}
+                        {message && <p role="status" className="ui-feedback bg-success-soft text-success">{translate(message)}</p>}
 
                         <button
                             type="submit"
                             disabled={saving || name === profile.name}
-                            className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                            className="ui-button ui-button-primary disabled:opacity-50"
                         >
-                            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            {saving ? translate("Đang lưu...") : translate("Lưu thay đổi")}
                         </button>
                     </form>
 
                     {/* Read-only account info */}
-                    <div className="space-y-3 border-t border-gray-100 pt-4 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Email</span>
-                            <span className="font-medium text-gray-800">{profile.email}</span>
+                    <div className="space-y-3 border-t border-border pt-4 text-body-md">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">{translate("Email")}</span>
+                            <span className="min-w-0 font-medium text-foreground [overflow-wrap:anywhere] sm:text-right">{profile.email}</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Trạng thái email</span>
-                            <span className={`font-medium ${profile.email_verified ? 'text-green-600' : 'text-orange-500'}`}>
-                                {profile.email_verified ? 'Đã xác thực' : 'Chưa xác thực'}
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">{translate("Trạng thái email")}</span>
+                            <span className={`font-medium ${profile.email_verified ? 'text-success' : 'text-warning'}`}>
+                                {profile.email_verified ? translate("Đã xác thực") : translate("Chưa xác thực")}
                             </span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Số coin</span>
-                            <span className="font-medium text-gray-800">🪙 {profile.coin_balance}</span>
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">{translate("Số coin")}</span>
+                            <span className="font-medium text-foreground">🪙 {formatNumber(profile.coin_balance)}</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">Ngày tham gia</span>
-                            <span className="font-medium text-gray-800">{joinedDate}</span>
+                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                            <span className="text-muted">{translate("Ngày tham gia")}</span>
+                            <span className="font-medium text-foreground">{joinedDate}</span>
                         </div>
                     </div>
                 </div>

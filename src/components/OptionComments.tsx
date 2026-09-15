@@ -1,7 +1,8 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
-import { api } from '@/lib/api';
+import { commentService } from '@/services/comment.service';
 import { Comment } from '@/types/poll';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -16,6 +17,7 @@ export default function OptionComments({
   pollId: number;
   pollAuthorId: number;
 }) {
+  const { translate } = useLanguage();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,7 @@ export default function OptionComments({
   async function fetchComments() {
     setLoading(true);
     try {
-      const { data } = await api.get(`/comments/options/${optionId}`);
+      const data = await commentService.listForOption(optionId);
       setComments(data.data);
       setLoaded(true);
     } finally {
@@ -46,7 +48,7 @@ export default function OptionComments({
 
     setSubmitting(true);
     try {
-      await api.post(`/comments/polls/${pollId}`, { content: text, poll_option_id: optionId });
+      await commentService.create(pollId, { content: text, poll_option_id: optionId });
       setText('');
       await fetchComments();
     } finally {
@@ -59,30 +61,30 @@ export default function OptionComments({
   }
 
   return (
-    <div className="mt-2 rounded-lg bg-gray-50 p-3">
-      <form onSubmit={handleSubmit} className="mb-3 flex gap-2">
+    <div className="mt-2 rounded-card bg-background p-3">
+      <form onSubmit={handleSubmit} className="mb-3 flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={text}
+          aria-label={translate("Bình luận về lựa chọn")}
           onChange={(e) => setText(e.target.value)}
-          placeholder={user ? 'Bình luận về lựa chọn này...' : 'Đăng nhập để bình luận'}
-          className="flex-1 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm focus:border-purple-400 focus:outline-none"
+          placeholder={user ? translate("Bình luận về lựa chọn này...") : translate("Đăng nhập để bình luận")}
+          className="ui-input flex-1 min-w-0"
         />
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-full bg-purple-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+          className="ui-button ui-button-primary disabled:opacity-50"
         >
-          Gửi
-        </button>
+          {translate("Gửi")} </button>
       </form>
 
       {loading ? (
-        <p className="text-xs text-gray-400">Đang tải...</p>
+        <p className="text-metadata text-muted">{translate("Đang tải...")}</p>
       ) : comments.length === 0 ? (
-        <p className="text-xs text-gray-400">Chưa có bình luận nào cho lựa chọn này.</p>
+        <p className="text-metadata text-muted">{translate("Chưa có bình luận nào cho lựa chọn này.")}</p>
       ) : (
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {comments.map((c) => (
             <CommentItem key={c.id} comment={c} pollAuthorId={pollAuthorId} />
           ))}

@@ -1,31 +1,26 @@
 'use client';
 
+import type { AdminStats as Stats } from '@/types/admin';
+import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
-import Navbar from '@/components/Navbar';
+import { adminService } from '@/services/admin.service';
+
 import AdminGuard from '@/components/AdminGuard';
 import AdminNav from '@/components/AdminNav';
 
-interface Stats {
-  users: { total: number; admins: number; staff: number; verified: number; locked: number; newToday: number; newThisWeek: number };
-  polls: { total: number; public: number; private: number; closed: number };
-  engagement: { totalVotes: number; totalComments: number; totalReactions: number };
-  moderation: { pendingReports: number; pendingAppeals: number };
-  revenue: { byCurrency: { currency: string; totalCents: number; transactionCount: number }[]; coinsInCirculation: number };
-  marketplace: { totalStickers: number; totalStickerPurchases: number };
-}
-
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+  const { formatNumber } = useLanguage();
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-gray-400">{sub}</p>}
+    <div className="ui-card min-w-0">
+      <p className="text-metadata text-muted">{label}</p>
+      <p className="mt-1 text-metric tabular-nums [overflow-wrap:anywhere] text-foreground">{typeof value === 'number' ? formatNumber(value) : value}</p>
+      {sub && <p className="mt-0.5 text-metadata text-muted">{sub}</p>}
     </div>
   );
 }
 
 export default function AdminDashboardPage() {
+  const { translate, locale } = useLanguage();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +31,7 @@ export default function AdminDashboardPage() {
   async function fetchStats() {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/stats');
+      const data = await adminService.getStats();
       setStats(data);
     } finally {
       setLoading(false);
@@ -44,74 +39,73 @@ export default function AdminDashboardPage() {
   }
 
   function formatMoney(cents: number, currency: string) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: currency.toUpperCase() }).format(
       cents / 100
     );
   }
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <div className="bg-background">
 
-        <main className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="mb-1 text-xl font-bold text-gray-900">Bảng điều khiển</h1>
-          <p className="mb-4 text-sm text-gray-500">Tổng quan hoạt động hệ thống</p>
+        <main className="page-shell">
+          <h1 className="mb-1 text-foreground text-page-title">{translate("Bảng điều khiển")}</h1>
+          <p className="mb-4 text-body-md text-muted">{translate("Tổng quan hoạt động hệ thống")}</p>
 
           <AdminNav />
 
           {loading || !stats ? (
-            <p className="text-center text-gray-400">Đang tải...</p>
+            <p className="text-center text-muted">{translate("Đang tải...")}</p>
           ) : (
             <div className="space-y-6">
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Người dùng</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <StatCard label="Tổng số" value={stats.users.total} />
-                  <StatCard label="Mới hôm nay" value={stats.users.newToday} />
-                  <StatCard label="Mới tuần này" value={stats.users.newThisWeek} />
-                  <StatCard label="Bị khoá" value={stats.users.locked} />
+                <h2 className="mb-2 text-muted text-section-title">{translate("Người dùng")}</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
+                  <StatCard label={translate("Tổng số")} value={stats.users.total} />
+                  <StatCard label={translate("Mới hôm nay")} value={stats.users.newToday} />
+                  <StatCard label={translate("Mới tuần này")} value={stats.users.newThisWeek} />
+                  <StatCard label={translate("Bị khoá")} value={stats.users.locked} />
                 </div>
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Bình chọn</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <StatCard label="Tổng số" value={stats.polls.total} />
-                  <StatCard label="Công khai" value={stats.polls.public} />
-                  <StatCard label="Đã đóng" value={stats.polls.closed} />
-                  <StatCard label="Tổng lượt vote" value={stats.engagement.totalVotes} />
+                <h2 className="mb-2 text-muted text-section-title">{translate("Bình chọn")}</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
+                  <StatCard label={translate("Tổng số")} value={stats.polls.total} />
+                  <StatCard label={translate("Công khai")} value={stats.polls.public} />
+                  <StatCard label={translate("Đã đóng")} value={stats.polls.closed} />
+                  <StatCard label={translate("Tổng lượt vote")} value={stats.engagement.totalVotes} />
                 </div>
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Kiểm duyệt (cần xử lý)</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <StatCard label="Báo cáo chờ xử lý" value={stats.moderation.pendingReports} />
-                  <StatCard label="Khiếu nại chờ xử lý" value={stats.moderation.pendingAppeals} />
+                <h2 className="mb-2 text-muted text-section-title">{translate("Kiểm duyệt (cần xử lý)")}</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
+                  <StatCard label={translate("Báo cáo chờ xử lý")} value={stats.moderation.pendingReports} />
+                  <StatCard label={translate("Khiếu nại chờ xử lý")} value={stats.moderation.pendingAppeals} />
                 </div>
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Doanh thu</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <h2 className="mb-2 text-muted text-section-title">{translate("Doanh thu")}</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
                   {stats.revenue.byCurrency.map((r) => (
                     <StatCard
                       key={r.currency}
-                      label={`Doanh thu (${r.currency.toUpperCase()})`}
+                      label={translate('revenueCurrency', { currency: r.currency.toUpperCase() })}
                       value={formatMoney(r.totalCents, r.currency)}
-                      sub={`${r.transactionCount} giao dịch`}
+                      sub={translate('transactions', { count: r.transactionCount })}
                     />
                   ))}
-                  <StatCard label="Coin đang lưu hành" value={`🪙 ${stats.revenue.coinsInCirculation}`} />
+                  <StatCard label={translate("Coin đang lưu hành")} value={translate('coinPrice', { count: stats.revenue.coinsInCirculation })} />
                 </div>
               </div>
 
               <div>
-                <h2 className="mb-2 text-sm font-semibold text-gray-600">Sticker Marketplace</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <StatCard label="Tổng sticker" value={stats.marketplace.totalStickers} />
-                  <StatCard label="Lượt mua" value={stats.marketplace.totalStickerPurchases} />
+                <h2 className="mb-2 text-muted text-section-title">{translate("Sticker Marketplace")}</h2>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3">
+                  <StatCard label={translate("Tổng sticker")} value={stats.marketplace.totalStickers} />
+                  <StatCard label={translate("Lượt mua")} value={stats.marketplace.totalStickerPurchases} />
                 </div>
               </div>
             </div>

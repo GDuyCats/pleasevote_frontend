@@ -62,3 +62,16 @@ export interface Comment {
   created_at: string;
   myReaction: string | null;
 }
+export interface CreatePollInput {
+  question: string;
+  type: Poll['type'];
+  visibility: Poll['visibility'];
+  allow_user_options: boolean;
+  options: { label: string }[];
+}
+
+export interface CreateCommentInput {
+  content: string;
+  parent_id?: number;
+  poll_option_id?: number;
+}

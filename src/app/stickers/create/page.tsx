@@ -1,13 +1,16 @@
 'use client';
 
+import { getErrorMessage } from '@/lib/i18n';
+import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { stickerService } from '@/services/sticker.service';
 import { SlotStatus } from '@/types/sticker';
 import { useAuth } from '@/context/AuthContext';
 import { useCoin } from '@/context/CoinContext';
 
 export default function CreateStickerPage() {
+  const { translate, formatNumber } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const { balance, refreshBalance } = useCoin();
   const router = useRouter();
@@ -37,7 +40,7 @@ export default function CreateStickerPage() {
   async function fetchSlotStatus() {
     setLoadingStatus(true);
     try {
-      const { data } = await api.get('/stickers/slots/status');
+      const data = await stickerService.getSlotStatus();
       setSlotStatus(data);
     } finally {
       setLoadingStatus(false);
@@ -48,11 +51,11 @@ export default function CreateStickerPage() {
     setError('');
     setBuyingSlots(true);
     try {
-      await api.post('/stickers/slots/purchase');
+      await stickerService.purchaseSlots();
       await fetchSlotStatus();
       await refreshBalance();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Mua thêm slot thất bại');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Mua thêm slot thất bại'));
     } finally {
       setBuyingSlots(false);
     }
@@ -81,14 +84,8 @@ export default function CreateStickerPage() {
 
     setSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('price_coins', priceCoins || '0');
-      formData.append('image', imageFile);
 
-      await api.post('/stickers', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await stickerService.create({ name, price_coins: priceCoins || '0', image: imageFile });
 
       setSuccess('Tạo sticker thành công!');
       setName('');
@@ -98,113 +95,115 @@ export default function CreateStickerPage() {
       await fetchSlotStatus();
 
       setTimeout(() => router.push('/stickers'), 1200);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Tạo sticker thất bại');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Tạo sticker thất bại'));
     } finally {
       setSubmitting(false);
     }
   }
 
   if (authLoading || loadingStatus || !slotStatus) {
-    return <p className="mt-10 text-center text-gray-400">Đang tải...</p>;
+    return <p className="mt-10 text-center text-muted">{translate("Đang tải...")}</p>;
   }
 
   const slotsFull = slotStatus.used >= slotStatus.limit;
   const canAffordSlots = (balance ?? 0) >= slotStatus.slotPackPriceCoins;
 
   return (
-    <main className="mx-auto max-w-lg px-4 py-8">
-      <h1 className="mb-1 text-xl font-bold text-gray-900">Tạo Sticker</h1>
-      <p className="mb-6 text-sm text-gray-500">Tạo sticker của riêng bạn và bán cho cộng đồng.</p>
+    <main className="page-shell">
+      <h1 className="mb-1 text-foreground text-page-title">{translate("Tạo Sticker")}</h1>
+      <p className="mb-6 text-body-md text-muted">{translate("Tạo sticker của riêng bạn và bán cho cộng đồng.")}</p>
 
       {/* Slot usage */}
-      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-        <div className="flex items-center justify-between">
+      <div className="ui-card mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-gray-800">
-              Slot sticker: {slotStatus.used} / {slotStatus.limit}
+            <p className="text-body-md font-semibold text-foreground">
+              {translate("Slot sticker:")} {formatNumber(slotStatus.used)} / {formatNumber(slotStatus.limit)}
             </p>
-            <p className="text-xs text-gray-500">
-              Mỗi lần mở khoá thêm {slotStatus.slotPackSize} slot với 🪙 {slotStatus.slotPackPriceCoins}
+            <p className="text-metadata text-muted">
+              {translate('slotPurchase', { count: slotStatus.slotPackSize, price: slotStatus.slotPackPriceCoins })}
             </p>
           </div>
           <button
             onClick={handleBuySlots}
             disabled={buyingSlots || !canAffordSlots}
-            className="rounded-lg bg-yellow-100 px-3 py-2 text-xs font-semibold text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
+            className="ui-button bg-warning-soft text-warning hover:bg-warning-muted disabled:opacity-50"
           >
-            {buyingSlots ? 'Đang mua...' : `+${slotStatus.slotPackSize} slot`}
+            {buyingSlots ? translate("Đang mua...") : translate('stickerSlots', { count: slotStatus.slotPackSize })}
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-muted">
           <div
-            className="h-full bg-purple-500 transition-all"
+            className="h-full bg-primary transition-all"
             style={{ width: `${Math.min(100, (slotStatus.used / slotStatus.limit) * 100)}%` }}
           />
         </div>
 
         {!canAffordSlots && slotsFull && (
-          <p className="mt-2 text-xs text-red-500">
-            Bạn không đủ coin để mở khoá thêm slot. Số dư hiện tại: 🪙 {balance ?? 0}
+          <p role="alert" className="ui-feedback bg-danger-soft mt-2 text-danger">
+            {translate('slotBalance', { count: balance ?? 0 })}
           </p>
         )}
       </div>
 
       {slotsFull ? (
-        <div className="rounded-2xl bg-orange-50 p-6 text-center">
-          <p className="text-sm font-semibold text-orange-700">Bạn đã dùng hết slot sticker.</p>
-          <p className="mt-1 text-xs text-orange-600">Mua thêm slot ở trên để tiếp tục tạo sticker mới.</p>
+        <div className="rounded-card bg-warning-soft p-6 text-center">
+          <p className="text-body-md font-semibold text-warning">{translate("Bạn đã dùng hết slot sticker.")}</p>
+          <p className="mt-1 text-metadata text-warning">{translate("Mua thêm slot ở trên để tiếp tục tạo sticker mới.")}</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <form onSubmit={handleSubmit} className="ui-card max-w-2xl space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Tên sticker</label>
+            <label htmlFor="sticker-name" className="mb-1 block text-foreground text-label-lg">{translate("Tên sticker")}</label>
             <input
+              id="sticker-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Mèo cười"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+              placeholder={translate("Mèo cười")}
+              className="ui-input w-full"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Giá (coin) — để 0 nếu muốn miễn phí
-            </label>
+            <label htmlFor="sticker-price" className="mb-1 block text-foreground text-label-lg">
+              {translate("Giá (coin) — để 0 nếu muốn miễn phí")} </label>
             <input
+              id="sticker-price"
               type="number"
               min={0}
               value={priceCoins}
               onChange={(e) => setPriceCoins(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-purple-500 focus:outline-none"
+              className="ui-input w-full"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Ảnh sticker</label>
+            <label htmlFor="sticker-image" className="mb-1 block text-foreground text-label-lg">{translate("Ảnh sticker")}</label>
             <input
+              id="sticker-image"
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-purple-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-purple-600 hover:file:bg-purple-100"
+              className="w-full text-control text-muted file:mr-3 file:rounded-control file:border-0 file:bg-accent-soft file:px-3 file:py-3 file:text-body-md file:font-semibold file:text-accent hover:file:bg-accent-muted min-h-11"
             />
             {imagePreview && (
-              <img src={imagePreview} alt="preview" className="mt-3 h-24 w-24 rounded-lg object-contain" />
+              <img src={imagePreview} alt={translate("preview")} className="mt-3 h-24 w-24 rounded-media object-contain" />
             )}
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {success && <p className="text-sm text-green-600">{success}</p>}
+          {error && <p role="alert" className="ui-feedback bg-danger-soft text-danger">{translate(error)}</p>}
+          {success && <p role="status" className="ui-feedback bg-success-soft text-success">{translate(success)}</p>}
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-purple-600 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+            className="ui-button ui-button-primary w-full disabled:opacity-50"
           >
-            {submitting ? 'Đang tạo...' : 'Tạo sticker'}
+            {submitting ? translate("Đang tạo...") : translate("Tạo sticker")}
           </button>
         </form>
       )}
